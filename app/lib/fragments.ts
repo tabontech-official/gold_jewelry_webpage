@@ -224,6 +224,42 @@ export const HEADER_QUERY = `#graphql
     menu(handle: $headerMenuHandle) {
       ...Menu
     }
+    ringsPrimary: menu(handle: "rings-1") {
+      ...Menu
+    }
+    ringsSecondary: menu(handle: "rings-2") {
+      ...Menu
+    }
+    chainsGroup1: menu(handle: "chains-copy-copy-1") {
+      ...Menu
+    }
+    chainsGroup2: menu(handle: "chains-copy-copy") {
+      ...Menu
+    }
+    chainsGroup3: menu(handle: "chains-copy") {
+      ...Menu
+    }
+    braceletsMenu: menu(handle: "bracelets") {
+      ...Menu
+    }
+    earringsMenu: menu(handle: "earrings") {
+      ...Menu
+    }
+    pendantsMenu: menu(handle: "pendants") {
+      ...Menu
+    }
+    chainWithPendantMenu: menu(handle: "chain-with-pendant") {
+      ...Menu
+    }
+    necklacesMenu: menu(handle: "necklaces") {
+      ...Menu
+    }
+    diamondMenu: menu(handle: "diamond") {
+      ...Menu
+    }
+    engagementRingsMenu: menu(handle: "engagement-rings") {
+      ...Menu
+    }
   }
   ${MENU_FRAGMENT}
 ` as const;

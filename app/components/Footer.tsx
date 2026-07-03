@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {Await, Link, NavLink} from 'react-router';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 
 interface FooterProps {
@@ -18,17 +18,227 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="footer-newsletter">
+              <div className="footer-newsletter-copy">
+                <h3>Join the List</h3>
+                <p>Get 10% off your first order plus early access to sales.</p>
+              </div>
+              <form
+                className="footer-newsletter-form"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  aria-label="Email address"
+                  required
+                />
+                <button type="submit" className="btn btn-primary">
+                  Subscribe
+                </button>
+              </form>
+            </div>
+
+            <div className="footer-main">
+              <div className="footer-col">
+                <div className="footer-brand">{header.shop.name}</div>
+                <p>
+                  Fine jewelry and watches, crafted for every moment that
+                  matters.
+                </p>
+                <div className="footer-social">
+                  <a
+                    href="https://instagram.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Instagram"
+                  >
+                    <InstagramIcon />
+                  </a>
+                  <a
+                    href="https://facebook.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Facebook"
+                  >
+                    <FacebookIcon />
+                  </a>
+                  <a
+                    href="https://youtube.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="YouTube"
+                  >
+                    <YoutubeIcon />
+                  </a>
+                  <a
+                    href="https://tiktok.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="TikTok"
+                  >
+                    <TikTokIcon />
+                  </a>
+                </div>
+              </div>
+
+              <div className="footer-col">
+                <h4>Shop</h4>
+                <ul>
+                  <li>
+                    <Link to="/collections/rings">Rings</Link>
+                  </li>
+                  <li>
+                    <Link to="/collections/chains">Chains</Link>
+                  </li>
+                  <li>
+                    <Link to="/collections/bracelets">Bracelets</Link>
+                  </li>
+                  <li>
+                    <Link to="/collections/earrings">Earrings</Link>
+                  </li>
+                  <li>
+                    <Link to="/collections/diamond">Diamond & Engagement</Link>
+                  </li>
+                  <li>
+                    <Link to="/collections/shop-all">Shop All</Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="footer-col">
+                <h4>Customer Care</h4>
+                {footer?.menu && header.shop.primaryDomain?.url ? (
+                  <FooterMenu
+                    menu={footer.menu}
+                    primaryDomainUrl={header.shop.primaryDomain.url}
+                    publicStoreDomain={publicStoreDomain}
+                  />
+                ) : (
+                  <ul>
+                    <li>
+                      <Link to="/policies/privacy-policy">Privacy Policy</Link>
+                    </li>
+                    <li>
+                      <Link to="/policies/refund-policy">Refund Policy</Link>
+                    </li>
+                    <li>
+                      <Link to="/policies/shipping-policy">
+                        Shipping Policy
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/policies/terms-of-service">
+                        Terms of Service
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
+
+              <div className="footer-col">
+                <h4>Find Us</h4>
+                <ul>
+                  <li>10 W 46th St, Floor 17, New York, NY 10036</li>
+                  <li>Mon &ndash; Fri 10am &ndash; 6pm EST</li>
+                  <li>Sat &ndash; Sun Closed</li>
+                  <li>
+                    <a href="tel:9299305655">929-930-5655</a>
+                  </li>
+                  <li>
+                    <a href="mailto:info@bayamjewelry.com">
+                      info@bayamjewelry.com
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#showroom">Book an Appointment</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="footer-bottom">
+              <span>
+                &copy; {new Date().getFullYear()} {header.shop.name}. All
+                rights reserved.
+              </span>
+              <span className="footer-payments">
+                Visa &middot; Mastercard &middot; Amex &middot; PayPal &middot;
+                Apple Pay
+              </span>
+            </div>
           </footer>
         )}
       </Await>
     </Suspense>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M14 9h2.5V6H14c-2 0-3.5 1.6-3.5 3.6V12H8v3h2.5v6h3v-6h2.4l.4-3h-2.8v-2.1c0-.6.4-.9 1-.9Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function YoutubeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <rect
+        x="2.5"
+        y="5.5"
+        width="19"
+        height="13"
+        rx="3.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path d="M10.5 9.5v5l4.5-2.5-4.5-2.5Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TikTokIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M14 3v10.8a2.7 2.7 0 1 1-2.2-2.66"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14 3c.3 2 1.8 3.5 3.8 3.8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

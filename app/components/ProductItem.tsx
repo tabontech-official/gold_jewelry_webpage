@@ -10,18 +10,20 @@ import {useVariantUrl} from '~/lib/variants';
 export function ProductItem({
   product,
   loading,
+  className,
 }: {
   product:
     | CollectionItemFragment
     | ProductItemFragment
     | RecommendedProductFragment;
   loading?: 'eager' | 'lazy';
+  className?: string;
 }) {
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
   return (
     <Link
-      className="product-item"
+      className={className ? `product-item ${className}` : 'product-item'}
       key={product.id}
       prefetch="intent"
       to={variantUrl}

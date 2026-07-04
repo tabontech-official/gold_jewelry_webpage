@@ -18,30 +18,8 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            <div className="footer-newsletter">
-              <div className="footer-newsletter-copy">
-                <h3>Join the List</h3>
-                <p>Get 10% off your first order plus early access to sales.</p>
-              </div>
-              <form
-                className="footer-newsletter-form"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  aria-label="Email address"
-                  required
-                />
-                <button type="submit" className="btn btn-primary">
-                  Subscribe
-                </button>
-              </form>
-            </div>
-
             <div className="footer-main">
-              <div className="footer-col">
+              <div className="footer-left">
                 <div className="footer-brand">{header.shop.name}</div>
                 <p>
                   Fine jewelry and watches, crafted for every moment that
@@ -81,92 +59,107 @@ export function Footer({
                     <TikTokIcon />
                   </a>
                 </div>
+                {/* quick-shop links removed from here to avoid duplication; kept in Shop column */}
               </div>
 
-              <div className="footer-col">
-                <h4>Shop</h4>
-                <ul>
-                  <li>
-                    <Link to="/collections/rings">Rings</Link>
-                  </li>
-                  <li>
-                    <Link to="/collections/chains">Chains</Link>
-                  </li>
-                  <li>
-                    <Link to="/collections/bracelets">Bracelets</Link>
-                  </li>
-                  <li>
-                    <Link to="/collections/earrings">Earrings</Link>
-                  </li>
-                  <li>
-                    <Link to="/collections/diamond">Diamond & Engagement</Link>
-                  </li>
-                  <li>
-                    <Link to="/collections/shop-all">Shop All</Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="footer-col">
-                <h4>Customer Care</h4>
-                {footer?.menu && header.shop.primaryDomain?.url ? (
-                  <FooterMenu
-                    menu={footer.menu}
-                    primaryDomainUrl={header.shop.primaryDomain.url}
-                    publicStoreDomain={publicStoreDomain}
-                  />
-                ) : (
+              <div className="footer-mid">
+                <div className="footer-col">
+                  <h4>Shop</h4>
                   <ul>
                     <li>
-                      <Link to="/policies/privacy-policy">Privacy Policy</Link>
+                      <Link to="/collections/diamond">Diamond & Engagement</Link>
                     </li>
                     <li>
-                      <Link to="/policies/refund-policy">Refund Policy</Link>
+                      <Link to="/collections/chains">Chains</Link>
                     </li>
                     <li>
-                      <Link to="/policies/shipping-policy">
-                        Shipping Policy
-                      </Link>
+                      <Link to="/collections/rings">Rings</Link>
                     </li>
                     <li>
-                      <Link to="/policies/terms-of-service">
-                        Terms of Service
-                      </Link>
+                      <Link to="/collections/bracelets">Bracelets</Link>
+                    </li>
+                    <li>
+                      <Link to="/collections/earrings">Earrings</Link>
+                    </li>
+                    <li>
+                      <Link to="/collections/shop-all">Shop All</Link>
                     </li>
                   </ul>
-                )}
+                </div>
+
+                <div className="footer-col">
+                  <h4>Customers</h4>
+                  <ul>
+                    <li>
+                      <Link to="/search">Search</Link>
+                    </li>
+                    <li>
+                      <Link to="/policies/privacy-policy">Your Privacy Choices</Link>
+                    </li>
+                    <li>
+                      <Link to="/faq">FAQ</Link>
+                    </li>
+                    <li>
+                      <Link to="/contact">Contact Us</Link>
+                    </li>
+                    <li>
+                      <Link to="/blogs">Blog</Link>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="footer-col">
+                  <h4>Find Us</h4>
+                  <ul>
+                    <li>10 W 46th St, Floor 17, New York, NY 10036</li>
+                    <li>Mon &ndash; Fri 10am &ndash; 6pm EST</li>
+                    <li>Sat &ndash; Sun Closed</li>
+                    <li>
+                      <a href="tel:9299305655">929-930-5655</a>
+                    </li>
+                    <li>
+                      <a href="mailto:info@bayamjewelry.com">info@bayamjewelry.com</a>
+                    </li>
+                    <li>
+                      <a href="#showroom">Book an Appointment</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <div className="footer-col">
-                <h4>Find Us</h4>
-                <ul>
-                  <li>10 W 46th St, Floor 17, New York, NY 10036</li>
-                  <li>Mon &ndash; Fri 10am &ndash; 6pm EST</li>
-                  <li>Sat &ndash; Sun Closed</li>
-                  <li>
-                    <a href="tel:9299305655">929-930-5655</a>
-                  </li>
-                  <li>
-                    <a href="mailto:info@bayamjewelry.com">
-                      info@bayamjewelry.com
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#showroom">Book an Appointment</a>
-                  </li>
-                </ul>
+              <div className="footer-newsletter aside">
+                <div className="footer-newsletter-copy">
+                  <h3>GET AN EXTRA 10% OFF</h3>
+                  <p>when you sign up to receive SMS Updates</p>
+                </div>
+                <form className="footer-newsletter-form" onSubmit={(e) => e.preventDefault()}>
+                  <input
+                    type="text"
+                    name="phone"
+                    placeholder="Enter Mobile Number"
+                    aria-label="Mobile number"
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary">SUBSCRIBE</button>
+                </form>
+                <p style={{fontSize: '0.75rem', color: 'var(--color-ink-soft)'}}>
+                  By submitting this form, you agree to receive recurring automated promotional and personalized marketing text messages.
+                </p>
               </div>
             </div>
 
             <div className="footer-bottom">
-              <span>
-                &copy; {new Date().getFullYear()} {header.shop.name}. All
-                rights reserved.
-              </span>
-              <span className="footer-payments">
-                Visa &middot; Mastercard &middot; Amex &middot; PayPal &middot;
-                Apple Pay
-              </span>
+              <div className="footer-bottom-left">
+                <span>&copy; {new Date().getFullYear()} {header.shop.name}. All rights reserved.</span>
+                <nav className="footer-bottom-links">
+                  <Link to="/policies/privacy-policy">Privacy</Link>
+                  <Link to="/policies/terms-of-service">Terms</Link>
+                  <Link to="/accessibility">Accessibility</Link>
+                </nav>
+              </div>
+              <div className="footer-payments">
+                Visa &middot; Mastercard &middot; Amex &middot; PayPal &middot; Apple Pay
+              </div>
             </div>
           </footer>
         )}
@@ -186,8 +179,9 @@ function InstagramIcon() {
         rx="5"
         stroke="currentColor"
         strokeWidth="1.6"
+        fill="none"
       />
-      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.6" fill="none" />
       <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
     </svg>
   );

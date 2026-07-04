@@ -105,6 +105,18 @@ function Hero() {
             Shop Women&rsquo;s
           </Link>
         </div>
+            <div className="hero-ticker" aria-hidden="false">
+              <div className="ticker-track">
+                <span>Lifetime Warranty ⤴</span>
+                <span>Lifetime Upgrade</span>
+                <span>Free Shipping &amp; Returns 🚚</span>
+                <span>0% APR Financing</span>
+                <span>Lifetime Warranty ⤴</span>
+                <span>Lifetime Upgrade</span>
+                <span>Free Shipping &amp; Returns 🚚</span>
+                <span>0% APR Financing</span>
+              </div>
+            </div>
       </div>
     </section>
   );
@@ -128,29 +140,55 @@ function ShopByCategory({categories}: {categories: CategoryTile[]}) {
           <span className="eyebrow">Explore</span>
           <h2>Shop by Category</h2>
         </div>
-        <div className="category-grid">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/collections/${category.handle}`}
-              className="category-tile"
-            >
-              {category.image?.url ? (
-                <Image
-                  data={category.image}
-                  alt={category.image.altText ?? category.title}
-                  aspectRatio="4/3"
-                  className="category-tile-image"
-                  sizes="(max-width: 40em) 100vw, 18vw"
-                />
-              ) : (
-                <span className="category-tile-circle" aria-hidden="true">
-                  {category.title.charAt(0)}
-                </span>
-              )}
-              <span>{category.title}</span>
-            </Link>
-          ))}
+        <div className="category-carousel">
+          <button
+            className="carousel-btn carousel-btn-left"
+            aria-label="Scroll categories left"
+            onClick={() => {
+              const track = document.querySelector('.category-carousel-track');
+              if (track) track.scrollBy({left: -track.clientWidth * 0.8, behavior: 'smooth'});
+            }}
+          >
+            ‹
+          </button>
+
+          <div className="category-carousel-viewport">
+            <div className="category-carousel-track">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/collections/${category.handle}`}
+                  className="category-tile carousel-item"
+                >
+                  {category.image?.url ? (
+                    <Image
+                      data={category.image}
+                      alt={category.image.altText ?? category.title}
+                      aspectRatio="4/3"
+                      className="category-tile-image"
+                      sizes="(max-width: 40em) 100vw, 18vw"
+                    />
+                  ) : (
+                    <span className="category-tile-circle" aria-hidden="true">
+                      {category.title.charAt(0)}
+                    </span>
+                  )}
+                  <span>{category.title}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="carousel-btn carousel-btn-right"
+            aria-label="Scroll categories right"
+            onClick={() => {
+              const track = document.querySelector('.category-carousel-track');
+              if (track) track.scrollBy({left: track.clientWidth * 0.8, behavior: 'smooth'});
+            }}
+          >
+            ›
+          </button>
         </div>
       </div>
     </section>

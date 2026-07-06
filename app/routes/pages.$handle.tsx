@@ -2,6 +2,7 @@ import {
   useLoaderData,
 } from 'react-router';
 import type {Route} from './+types/pages.$handle';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -65,6 +66,7 @@ export default function Page() {
 
   return (
     <div className="page">
+      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: page.title}]} />
       <header>
         <h1>{page.title}</h1>
       </header>

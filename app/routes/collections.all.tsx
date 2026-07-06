@@ -5,6 +5,7 @@ import {
 import {getPaginationVariables, Image, Money} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductItem} from '~/components/ProductItem';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = () => {
@@ -54,6 +55,13 @@ export default function Collection() {
 
   return (
     <div className="collection">
+      <Breadcrumb
+        items={[
+          {label: 'Home', to: '/'},
+          {label: 'Shop', to: '/collections/all'},
+          {label: 'All Products'},
+        ]}
+      />
       <h1>Products</h1>
       <PaginatedResourceSection<CollectionItemFragment>
         connection={products}

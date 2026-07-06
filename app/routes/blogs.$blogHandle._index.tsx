@@ -4,6 +4,7 @@ import {
 } from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle._index';
 import {Image, getPaginationVariables} from '@shopify/hydrogen';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import type {ArticleItemFragment} from 'storefrontapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
@@ -73,6 +74,13 @@ export default function Blog() {
 
   return (
     <div className="blog">
+      <Breadcrumb
+        items={[
+          {label: 'Home', to: '/'},
+          {label: 'Blogs', to: '/blogs'},
+          {label: blog.title},
+        ]}
+      />
       <h1>{blog.title}</h1>
       <div className="blog-grid">
         <PaginatedResourceSection<ArticleItemFragment> connection={articles}>

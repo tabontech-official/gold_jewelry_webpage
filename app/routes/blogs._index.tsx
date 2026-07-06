@@ -4,6 +4,7 @@ import {
 } from 'react-router';
 import type {Route} from './+types/blogs._index';
 import {getPaginationVariables} from '@shopify/hydrogen';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import type {BlogsQuery} from 'storefrontapi.generated';
 
@@ -58,6 +59,7 @@ export default function Blogs() {
 
   return (
     <div className="blogs">
+      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Blogs'}]} />
       <h1>Blogs</h1>
       <div className="blogs-grid">
         <PaginatedResourceSection<BlogNode> connection={blogs}>

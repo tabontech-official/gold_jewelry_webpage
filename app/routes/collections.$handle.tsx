@@ -6,6 +6,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 import {ProductSlider} from '~/components/ProductSlider';
 import {ShopByCategory} from '~/components/ShopByCategory';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import {CollectionSubNav} from '~/components/CollectionSubNav';
 import {CollectionPromo} from '~/components/CollectionPromo';
 import {FeatureStrip} from '~/components/FeatureStrip';
@@ -80,6 +81,16 @@ export default function Collection() {
 
   return (
     <div className="collection">
+      <div className="section-inner">
+        <Breadcrumb
+          items={[
+            {label: 'Home', to: '/'},
+            {label: 'Shop', to: '/collections/all'},
+            {label: collection.title},
+          ]}
+        />
+      </div>
+
       <section className="collection-hero">
         <div className="section-inner collection-hero-inner">
           <span className="eyebrow">Shop {collection.title}</span>

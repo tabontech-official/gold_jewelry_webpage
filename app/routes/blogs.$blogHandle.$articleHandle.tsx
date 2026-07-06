@@ -1,6 +1,7 @@
-import {useLoaderData} from 'react-router';
+import {useLoaderData, useParams} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.$articleHandle';
 import {Image} from '@shopify/hydrogen';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -67,7 +68,14 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export default function Article() {
   const {article} = useLoaderData<typeof loader>();
+  const {blogHandle} = useParams();
   const {title, image, contentHtml, author} = article;
+
+  const blogLabel = blogHandle
+    ? blogHandle
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    : 'Blog';
 
   const publishedDate = new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
@@ -77,6 +85,14 @@ export default function Article() {
 
   return (
     <div className="article">
+      <Breadcrumb
+        items={[
+          {label: 'Home', to: '/'},
+          {label: 'Blogs', to: '/blogs'},
+          {label: blogLabel, to: `/blogs/${blogHandle}`},
+          {label: title},
+        ]}
+      />
       <h1>
         {title}
         <div>

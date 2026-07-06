@@ -1,5 +1,6 @@
 import {useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/policies._index';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import type {PoliciesQuery, PolicyItemFragment} from 'storefrontapi.generated';
 
 export async function loader({context}: Route.LoaderArgs) {
@@ -26,6 +27,7 @@ export default function Policies() {
 
   return (
     <div className="policies">
+      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Policies'}]} />
       <h1>Policies</h1>
       <div>
         {policies.map((policy) => (

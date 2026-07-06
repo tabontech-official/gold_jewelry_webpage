@@ -5,6 +5,7 @@ import type {Route} from './+types/search';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
+import {Breadcrumb} from '~/components/Breadcrumb';
 import {
   type RegularSearchReturn,
   type PredictiveSearchReturn,
@@ -41,6 +42,7 @@ export default function SearchPage() {
 
   return (
     <div className="search">
+      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Search'}]} />
       <h1>Search</h1>
       <SearchForm>
         {({inputRef}) => (

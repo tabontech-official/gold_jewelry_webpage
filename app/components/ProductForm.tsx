@@ -1,9 +1,5 @@
-import {Link, useNavigate} from 'react-router';
+import {useNavigate} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
-import type {
-  Maybe,
-  ProductOptionValueSwatch,
-} from '@shopify/hydrogen/storefront-api-types';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
@@ -17,89 +13,70 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+
   return (
     <div className="product-form">
       {productOptions.map((option) => {
-        // If there is only a single value in the option values, don't display the option
+        // Don't render a picker for an option that has only one value.
         if (option.optionValues.length === 1) return null;
+
+        const current =
+          option.optionValues.find((value) => value.selected)?.name ?? '';
 
         return (
           <div className="product-options" key={option.name}>
-            <h5 className="product-options-label">{option.name}</h5>
-            <div className="product-options-grid">
-              {option.optionValues.map((value) => {
-                const {
-                  name,
-                  handle,
-                  variantUriQuery,
-                  selected,
-                  available,
-                  exists,
-                  isDifferentProduct,
-                  swatch,
-                } = value;
+            <label
+              className="product-options-label"
+              htmlFor={`option-${option.name}`}
+            >
+              {option.name}
+            </label>
+            <div className="product-select-wrap">
+              <select
+                id={`option-${option.name}`}
+                className="product-select"
+                value={current}
+                onChange={(event) => {
+                  const value = option.optionValues.find(
+                    (v) => v.name === event.target.value,
+                  );
+                  if (!value || value.selected) return;
 
-                if (isDifferentProduct) {
-                  // SEO
-                  // When the variant is a combined listing child product
-                  // that leads to a different url, we need to render it
-                  // as an anchor tag
-                  return (
-                    <Link
-                      className="product-options-item"
-                      key={option.name + name}
-                      prefetch="intent"
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </Link>
-                  );
-                } else {
-                  // SEO
-                  // When the variant is an update to the search param,
-                  // render it as a button with javascript navigating to
-                  // the variant so that SEO bots do not index these as
-                  // duplicated links
-                  return (
-                    <button
-                      type="button"
-                      className={`product-options-item${
-                        exists && !selected ? ' link' : ''
-                      }`}
-                      key={option.name + name}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                      disabled={!exists}
-                      onClick={() => {
-                        if (!selected) {
-                          void navigate(`?${variantUriQuery}`, {
-                            replace: true,
-                            preventScrollReset: true,
-                          });
-                        }
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </button>
-                  );
-                }
-              })}
+                  // A value that maps to a different product (combined listing)
+                  // takes the shopper straight to that product page; otherwise
+                  // we just update the variant search param in place.
+                  if (value.isDifferentProduct) {
+                    void navigate(
+                      `/products/${value.handle}?${value.variantUriQuery}`,
+                      {preventScrollReset: true},
+                    );
+                  } else {
+                    void navigate(`?${value.variantUriQuery}`, {
+                      replace: true,
+                      preventScrollReset: true,
+                    });
+                  }
+                }}
+              >
+                {option.optionValues.map((value) => (
+                  <option
+                    key={option.name + value.name}
+                    value={value.name}
+                    disabled={!value.exists && !value.isDifferentProduct}
+                  >
+                    {value.name}
+                    {!value.available ? ' — Sold out' : ''}
+                  </option>
+                ))}
+              </select>
+              <span className="product-select-caret" aria-hidden="true">
+                ▾
+              </span>
             </div>
           </div>
         );
       })}
+
       <AddToCartButton
         className="btn btn-primary product-atc"
         disabled={!selectedVariant || !selectedVariant.availableForSale}
@@ -120,31 +97,6 @@ export function ProductForm({
       >
         {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
       </AddToCartButton>
-    </div>
-  );
-}
-
-function ProductOptionSwatch({
-  swatch,
-  name,
-}: {
-  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
-  name: string;
-}) {
-  const image = swatch?.image?.previewImage?.url;
-  const color = swatch?.color;
-
-  if (!image && !color) return name;
-
-  return (
-    <div
-      aria-label={name}
-      className="product-option-label-swatch"
-      style={{
-        backgroundColor: color || 'transparent',
-      }}
-    >
-      {!!image && <img src={image} alt={name} />}
     </div>
   );
 }

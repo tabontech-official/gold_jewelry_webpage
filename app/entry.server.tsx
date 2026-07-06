@@ -19,6 +19,40 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    // Allow embedded product videos (YouTube / Vimeo) and hosted Shopify video.
+    frameSrc: [
+      "'self'",
+      'https://www.youtube.com',
+      'https://www.youtube-nocookie.com',
+      'https://player.vimeo.com',
+    ],
+    mediaSrc: ["'self'", 'https://cdn.shopify.com', 'blob:', 'data:'],
+    imgSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://i.ytimg.com',
+      'https://i.vimeocdn.com',
+      'data:',
+    ],
+    // Google Fonts (stylesheet + font files).
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      'https://cdn.shopify.com',
+      'https://fonts.googleapis.com',
+    ],
+    fontSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://fonts.gstatic.com',
+      'data:',
+    ],
+    connectSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://fonts.googleapis.com',
+      'https://fonts.gstatic.com',
+    ],
   });
 
   const body = await renderToReadableStream(

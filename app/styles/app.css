@@ -2441,6 +2441,120 @@ button.reset:hover:not(:has(> *)) {
   margin-top: 0.5rem;
 }
 
+.product-finance-btn {
+  width: 100%;
+  background: #5a31f4;
+  border-color: #5a31f4;
+  color: #fff;
+}
+
+.product-finance-btn:hover {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.product-finance-note {
+  margin: 0.55rem 0 0;
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.product-purchase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.product-purchase-row {
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.75rem;
+}
+
+.product-quantity-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.75rem;
+}
+
+.product-quantity-label {
+  color: var(--color-ink-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.product-quantity-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.product-quantity-btn,
+.product-quantity-value {
+  height: 3.75rem;
+  width: 3.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-quantity-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.product-quantity-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.product-quantity-value {
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.product-purchase-action {
+  min-height: 3.75rem;
+  margin-top: 0;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 48em) {
+  .product-purchase-grid {
+    gap: 0.85rem;
+  }
+}
+
+@media (max-width: 40em) {
+  .product-purchase-row {
+    grid-template-columns: 1fr;
+  }
+
+  .product-quantity-block {
+    width: 100%;
+  }
+
+  .product-quantity-stepper {
+    margin-left: auto;
+  }
+}
+
 .product-option-label-swatch {
   width: 1.25rem;
   height: 1.25rem;

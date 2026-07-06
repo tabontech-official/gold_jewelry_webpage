@@ -1,4 +1,5 @@
-import {useNavigate} from 'react-router';
+import {useState} from 'react';
+import {useNavigate, Link} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
@@ -10,9 +11,11 @@ export function ProductForm({
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
-}) {
+  }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  const [quantity, setQuantity] = useState(1);
+  const maxQuantity = 99;
 
   return (
     <div className="product-form">
@@ -77,26 +80,71 @@ export function ProductForm({
         );
       })}
 
-      <AddToCartButton
-        className="btn btn-primary product-atc"
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        onClick={() => {
-          open('cart');
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-      </AddToCartButton>
+      <div className="product-purchase-grid">
+        <div className="product-purchase-row">
+          <div className="product-quantity-block">
+            <span className="product-quantity-label">Quantity</span>
+            <div
+              className="product-quantity-stepper"
+              aria-label="Product quantity"
+            >
+              <button
+                type="button"
+                className="product-quantity-btn"
+                onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                disabled={!selectedVariant || quantity <= 1}
+                aria-label="Decrease quantity"
+              >
+                -
+              </button>
+              <span className="product-quantity-value">{quantity}</span>
+              <button
+                type="button"
+                className="product-quantity-btn"
+                onClick={() =>
+                  setQuantity((current) => Math.min(maxQuantity, current + 1))
+                }
+                disabled={!selectedVariant || quantity >= maxQuantity}
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <AddToCartButton
+            className="btn btn-primary product-atc product-purchase-action"
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            onClick={() => {
+              open('cart');
+            }}
+            lines={
+              selectedVariant
+                ? [
+                    {
+                      merchandiseId: selectedVariant.id,
+                      quantity,
+                      selectedVariant,
+                    },
+                  ]
+                : []
+            }
+          >
+            {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+          </AddToCartButton>
+        </div>
+
+        <Link
+          to="/policies/finance"
+          className="btn btn-outline product-finance-btn product-purchase-action"
+        >
+          Buy with Shop
+        </Link>
+      </div>
+
+      <p className="product-finance-note">
+        See flexible payment plans and installment options before checkout.
+      </p>
     </div>
   );
 }

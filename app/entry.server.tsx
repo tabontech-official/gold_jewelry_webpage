@@ -19,12 +19,25 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    scriptSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      'https://cdn.shopify.com',
+      'https://elfsightcdn.com',
+      'https://*.elfsightcdn.com',
+      'https://static.elfsight.com',
+      'https://*.elfsight.com',
+    ],
     // Allow embedded product videos (YouTube / Vimeo) and hosted Shopify video.
     frameSrc: [
       "'self'",
       'https://www.youtube.com',
       'https://www.youtube-nocookie.com',
       'https://player.vimeo.com',
+      'https://elfsight.com',
+      'https://*.elfsight.com',
+      'https://elfsightcdn.com',
+      'https://*.elfsightcdn.com',
     ],
     mediaSrc: ["'self'", 'https://cdn.shopify.com', 'blob:', 'data:'],
     imgSrc: [
@@ -32,6 +45,10 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       'https://i.ytimg.com',
       'https://i.vimeocdn.com',
+      'https://elfsight.com',
+      'https://*.elfsight.com',
+      'https://elfsightcdn.com',
+      'https://*.elfsightcdn.com',
       'data:',
     ],
     // Google Fonts (stylesheet + font files).
@@ -52,6 +69,11 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       'https://fonts.googleapis.com',
       'https://fonts.gstatic.com',
+      'https://elfsight.com',
+      'https://*.elfsight.com',
+      'https://elfsightcdn.com',
+      'https://*.elfsightcdn.com',
+      'https://core.service.elfsight.com',
     ],
   });
 

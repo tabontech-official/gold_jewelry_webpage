@@ -14,10 +14,12 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
+import type {ProductRecommendationsQuery} from 'storefrontapi.generated';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductGallery, type GalleryMedia} from '~/components/ProductGallery';
 import {ProductForm} from '~/components/ProductForm';
 import {FeatureStrip} from '~/components/FeatureStrip';
+import {GoogleReviewsSection} from '~/components/GoogleReviewsSection';
 import {ProductSlider} from '~/components/ProductSlider';
 import {ShopByCategory} from '~/components/ShopByCategory';
 import {Breadcrumb} from '~/components/Breadcrumb';
@@ -271,11 +273,22 @@ export default function Product() {
         </div>
       </div>
 
+      <FeatureStrip />
+
+      <ProductInfoFaqSection
+        title={title}
+        vendor={vendor}
+        categoryName={categoryName}
+        sku={sku}
+        descriptionHtml={descriptionHtml}
+        selectedVariant={selectedVariant}
+      />
+
       <RelatedProducts products={recommendedProducts} />
 
       <ShopByCategory />
 
-      <FeatureStrip />
+      <GoogleReviewsSection />
 
       <Analytics.ProductView
         data={{
@@ -292,6 +305,158 @@ export default function Product() {
           ],
         }}
       />
+    </div>
+  );
+}
+
+function ProductInfoFaqSection({
+  title,
+  vendor,
+  categoryName,
+  sku,
+  descriptionHtml,
+  selectedVariant,
+}: {
+  title: string;
+  vendor?: string | null;
+  categoryName: string;
+  sku?: string | null;
+  descriptionHtml?: string | null;
+  selectedVariant: any;
+}) {
+  return (
+    <section className="home-section product-info-faqs">
+      <div className="section-inner">
+        <div className="home-section-heading">
+          <h2>Product Details & FAQs</h2>
+        </div>
+
+        <ProductMetadataGrid
+          vendor={vendor}
+          categoryName={categoryName}
+          sku={sku}
+          selectedVariant={selectedVariant}
+          descriptionHtml={descriptionHtml}
+        />
+
+        <ProductFaqList
+          title={title}
+          vendor={vendor}
+          categoryName={categoryName}
+          sku={sku}
+          selectedVariant={selectedVariant}
+        />
+      </div>
+    </section>
+  );
+}
+
+function ProductMetadataGrid({
+  vendor,
+  categoryName,
+  sku,
+  selectedVariant,
+  descriptionHtml,
+}: {
+  vendor?: string | null;
+  categoryName: string;
+  sku?: string | null;
+  selectedVariant: any;
+  descriptionHtml?: string | null;
+}) {
+  const metadata = [
+    {
+      label: 'Brand',
+      value: vendor?.trim() || 'Gold Jewelry Co.',
+    },
+    {
+      label: 'Category',
+      value: categoryName || 'Fine Jewelry',
+    },
+    {
+      label: 'SKU',
+      value: sku?.trim() || 'Available on request',
+    },
+    {
+      label: 'Availability',
+      value: selectedVariant?.availableForSale ? 'In stock' : 'Check availability',
+    },
+    {
+      label: 'Variant',
+      value: selectedVariant?.title || 'Default selection',
+    },
+    {
+      label: 'Description',
+      value: descriptionHtml ? 'See product description below' : 'Details will be updated soon',
+    },
+  ];
+
+  return (
+    <div className="product-metadata-grid" aria-label="Product metadata">
+      {metadata.map((item) => (
+        <div className="product-metadata-card" key={item.label}>
+          <span className="product-metadata-label">{item.label}</span>
+          <span className="product-metadata-value">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductFaqList({
+  title,
+  vendor,
+  categoryName,
+  sku,
+  selectedVariant,
+}: {
+  title: string;
+  vendor?: string | null;
+  categoryName: string;
+  sku?: string | null;
+  selectedVariant: any;
+}) {
+  const faqs = [
+    {
+      question: `What is ${title}?`,
+      answer: `This ${categoryName || 'jewelry piece'} is sold by ${vendor || 'our store'}${sku ? ` and is tracked under SKU ${sku}` : ''}.`,
+    },
+    {
+      question: 'What size or length options are available?',
+      answer:
+        'If this product has multiple length options, you can switch between them above the product description.',
+    },
+    {
+      question: 'Is it available right now?',
+      answer: selectedVariant?.availableForSale
+        ? 'Yes, this item is currently available for purchase.'
+        : 'Availability can change quickly. Please check the selected variant or contact us for the latest status.',
+    },
+    {
+      question: 'What if I need help after ordering?',
+      answer:
+        'We support shipping, returns, and warranty questions through our customer care team and the FAQ page.',
+    },
+    {
+      question: 'Do you have more product-specific details?',
+      answer:
+        'Yes. If a product has extra metadata, we will surface it here. Otherwise, these temporary FAQs stay visible so the section never looks empty.',
+    },
+  ];
+
+  return (
+    <div className="product-faqs">
+      <div className="product-faqs-header">
+        <h3>FAQs</h3>
+      </div>
+      <div className="product-faqs-list">
+        {faqs.map((faq) => (
+          <details className="product-faq-item" key={faq.question}>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
     </div>
   );
 }
@@ -334,7 +499,7 @@ function LengthArticleSelect({data}: {data: LengthArticles | null}) {
 function RelatedProducts({
   products,
 }: {
-  products: Promise<{productRecommendations: any[]} | null>;
+  products: Promise<ProductRecommendationsQuery | null>;
 }) {
   return (
     <section className="home-section">

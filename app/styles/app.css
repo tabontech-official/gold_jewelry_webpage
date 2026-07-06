@@ -1272,6 +1272,97 @@ button.reset:hover:not(:has(> *)) {
   text-align: center;
 }
 
+.google-reviews-section {
+  background: transparent;
+}
+
+.google-reviews-stage {
+  width: 100%;
+  min-height: 24rem;
+}
+
+.product-info-faqs {
+  background: transparent;
+}
+
+.product-metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-metadata-card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: transparent;
+  min-height: 7rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.product-metadata-label {
+  color: var(--color-gold-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.product-metadata-value {
+  color: var(--color-ink);
+  font-size: 0.98rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.product-faqs {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+}
+
+.product-faqs-header {
+  margin-bottom: 1rem;
+}
+
+.product-faqs-header h3 {
+  margin: 0 0 0.35rem 0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+}
+
+.product-faqs-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.product-faq-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.5rem 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.product-faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: var(--color-ink);
+  padding: 0.35rem 0;
+}
+
+.product-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.product-faq-item p {
+  margin: 0.75rem 0 0;
+  color: var(--color-ink-soft);
+  line-height: 1.65;
+}
+
 /* Policy / Generic page styles */
 .page {
   margin: 0 auto;

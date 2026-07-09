@@ -110,7 +110,10 @@ export default function Cart() {
 
   return (
     <div className="cart">
-      <h1>Cart</h1>
+      <div className="cart-page-head">
+        <span className="eyebrow">Your Selection</span>
+        <h1>Shopping Bag</h1>
+      </div>
       <CartMain layout="page" cart={cart} />
     </div>
   );

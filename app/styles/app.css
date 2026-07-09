@@ -36,15 +36,34 @@
   --font-body: 'Jost', system-ui, -apple-system, sans-serif;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
   font-family: var(--font-body);
   color: var(--color-ink);
   background: var(--color-bg);
+  /* long SKUs / URLs / unbroken strings can't force horizontal scroll */
+  overflow-wrap: break-word;
+}
+
+/* Media never overflows its container. height stays as authored so
+   object-fit / fixed-ratio containers keep working. */
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
 }
 
 h1,

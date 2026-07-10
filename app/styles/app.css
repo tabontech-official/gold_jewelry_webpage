@@ -5036,6 +5036,90 @@ button.reset:hover:not(:has(> *)) {
   color: #fff;
 }
 
+/* Circular sub-category icon strip (collection pages) */
+.subnav-icons {
+  cursor: grab;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 1.25rem 0 1.5rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none; /* Firefox — hide scrollbar */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch;
+}
+
+.subnav-icons::-webkit-scrollbar {
+  display: none; /* WebKit — hide scrollbar */
+}
+
+.subnav-icons.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  user-select: none;
+}
+
+.subnav-icons.is-dragging img,
+.subnav-icons.is-dragging a {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.subnav-icon {
+  align-items: center;
+  color: var(--color-ink);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.55rem;
+  scroll-snap-align: start;
+  text-align: center;
+  width: clamp(80px, 13vw, 112px);
+}
+
+.subnav-icon:hover {
+  text-decoration: none;
+}
+
+.subnav-icon-circle {
+  align-items: center;
+  aspect-ratio: 1;
+  background: var(--color-bg-soft, #f4f4f4);
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 160ms ease, transform 160ms ease;
+  width: 100%;
+}
+
+.subnav-icon-circle img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.subnav-icon:hover .subnav-icon-circle {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+}
+
+
+.subnav-icon-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.subnav-icon:hover .subnav-icon-label {
+  color: var(--color-gold-dark);
+}
+
 /* Horizontal product / category sliders */
 .slider-section {
   padding: 2.5rem 0;

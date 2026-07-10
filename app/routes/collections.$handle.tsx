@@ -5,7 +5,7 @@ import {getPaginationVariables, Analytics, Pagination} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 import {Breadcrumb} from '~/components/Breadcrumb';
-import {CollectionSubNav} from '~/components/CollectionSubNav';
+import {CollectionSubNavIcons} from '~/components/CollectionSubNavIcons';
 import {CollectionFilterSidebar} from '~/components/CollectionFilterSidebar';
 import {
   SHOP_BY_CATEGORIES_QUERY,
@@ -219,7 +219,7 @@ export default function Collection() {
 
       {rootData?.header && (
         <div className="section-inner">
-          <CollectionSubNav
+          <CollectionSubNavIcons
             handle={collection.handle}
             header={rootData.header}
             publicStoreDomain={rootData.publicStoreDomain}

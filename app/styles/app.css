@@ -456,16 +456,26 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .header-logo {
+  align-items: center;
   color: var(--cg-champagne);
+  display: flex;
   font-family: var(--font-display);
   font-size: clamp(1.4rem, 3vw, 2.4rem);
   font-weight: 700;
+  gap: 0.55rem;
+  justify-content: center;
   justify-self: center;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.05em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.header-logo-img {
+  flex: none;
+  height: clamp(2.8rem, 5vw, 3.8rem);
+  width: auto;
 }
 
 .header-logo:hover {
@@ -2305,7 +2315,6 @@ button.reset:hover:not(:has(> *)) {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: clamp(0.95rem, 4vw, 1.3rem);
-    letter-spacing: 0.08em;
   }
 
   .header-ctas {

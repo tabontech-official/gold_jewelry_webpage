@@ -77,6 +77,18 @@ export function Header({
           <HeaderSearchBar />
         </div>
         <NavLink prefetch="intent" to="/" end className="header-logo">
+          <img
+            className="header-logo-img"
+            // ponytail: CDN fallback until the logo is assigned in Shopify
+            // admin (Settings > Brand) — then shop.brand takes over.
+            src={
+              shop.brand?.logo?.image?.url ??
+              'https://cdn.shopify.com/s/files/1/0806/9568/9464/files/Gold_Custom_Logo.jpg?v=1774676842'
+            }
+            alt=""
+            width="500"
+            height="500"
+          />
           {shop.name}
         </NavLink>
         <div className="header-primary-right">

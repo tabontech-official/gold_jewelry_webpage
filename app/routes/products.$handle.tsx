@@ -4,6 +4,7 @@ import {
   useLoaderData,
   useNavigate,
   Await,
+  Link,
 } from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
@@ -20,8 +21,8 @@ import {ProductGallery, type GalleryMedia} from '~/components/ProductGallery';
 import {ProductForm} from '~/components/ProductForm';
 import {FeatureStrip} from '~/components/FeatureStrip';
 import {GoogleReviewsSection} from '~/components/GoogleReviewsSection';
-import {ProductSlider} from '~/components/ProductSlider';
-import {ShopByCategory} from '~/components/ShopByCategory';
+import {HorizontalCarousel} from '~/components/HorizontalCarousel';
+import {ProductItem} from '~/components/ProductItem';
 import {Breadcrumb} from '~/components/Breadcrumb';
 import {CATEGORIES} from '~/lib/categories';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
@@ -219,6 +220,10 @@ export default function Product() {
     {label: title},
   ];
 
+  const similarCollectionTo = categoryMatch
+    ? `/collections/${categoryMatch.handle}`
+    : '/collections/all';
+
   return (
     <div className="product">
       <Breadcrumb items={breadcrumbs} />
@@ -235,10 +240,7 @@ export default function Product() {
             <span className="eyebrow product-vendor">{categoryName}</span>
           )}
           <h1>{title}</h1>
-          <div className="product-meta">
-            {vendor && <span className="product-meta-item">{vendor}</span>}
-            {sku && <span className="product-meta-item">SKU: {sku}</span>}
-          </div>
+          {sku && <p className="product-sku">SKU / Style Code: {sku}</p>}
           <ProductPrice
             price={selectedVariant?.price}
             compareAtPrice={selectedVariant?.compareAtPrice}
@@ -255,38 +257,36 @@ export default function Product() {
             selectedVariant={selectedVariant}
           />
 
-          <ul className="product-assurances">
-            <li>Free U.S. shipping over $99</li>
-            <li>1-year warranty</li>
-            <li>14-day returns</li>
-          </ul>
+          <ProductAccordions
+            vendor={vendor}
+            categoryName={categoryName}
+            sku={sku}
+            descriptionHtml={descriptionHtml}
+            selectedVariant={selectedVariant}
+          />
 
-          {descriptionHtml && (
-            <div className="product-description">
-              <h2 className="product-description-heading">Description</h2>
-              <div
-                className="product-details-body"
-                dangerouslySetInnerHTML={{__html: descriptionHtml}}
-              />
-            </div>
-          )}
+          <div className="product-note">
+            <h3>Important Note</h3>
+            <p>
+              Solid gold is a soft precious metal. Store this piece separately,
+              keep it away from perfume and chlorine, and polish it with a soft
+              cloth. Custom or engraved pieces are crafted to order and may add
+              5–7 business days before shipping.
+            </p>
+          </div>
         </div>
       </div>
 
       <FeatureStrip />
 
-      <ProductInfoFaqSection
-        title={title}
-        vendor={vendor}
-        categoryName={categoryName}
-        sku={sku}
-        descriptionHtml={descriptionHtml}
-        selectedVariant={selectedVariant}
+      <ProductFaqSection
+        faqs={buildFaqs(product, selectedVariant, categoryName)}
       />
 
-      <RelatedProducts products={recommendedProducts} />
-
-      <ShopByCategory />
+      <RelatedProducts
+        products={recommendedProducts}
+        viewAllTo={similarCollectionTo}
+      />
 
       <GoogleReviewsSection />
 
@@ -309,122 +309,99 @@ export default function Product() {
   );
 }
 
-function ProductInfoFaqSection({
-  title,
+function ProductAccordions({
   vendor,
   categoryName,
   sku,
   descriptionHtml,
   selectedVariant,
 }: {
-  title: string;
   vendor?: string | null;
   categoryName: string;
   sku?: string | null;
   descriptionHtml?: string | null;
   selectedVariant: any;
 }) {
-  return (
-    <section className="home-section product-info-faqs">
-      <div className="section-inner">
-        <div className="home-section-heading">
-          <h2>Product Details & FAQs</h2>
-        </div>
-
-        <ProductMetadataGrid
-          vendor={vendor}
-          categoryName={categoryName}
-          sku={sku}
-          selectedVariant={selectedVariant}
-          descriptionHtml={descriptionHtml}
-        />
-
-        <ProductFaqList
-          title={title}
-          vendor={vendor}
-          categoryName={categoryName}
-          sku={sku}
-          selectedVariant={selectedVariant}
-        />
-      </div>
-    </section>
-  );
-}
-
-function ProductMetadataGrid({
-  vendor,
-  categoryName,
-  sku,
-  selectedVariant,
-  descriptionHtml,
-}: {
-  vendor?: string | null;
-  categoryName: string;
-  sku?: string | null;
-  selectedVariant: any;
-  descriptionHtml?: string | null;
-}) {
-  const metadata = [
-    {
-      label: 'Brand',
-      value: vendor?.trim() || 'Gold Jewelry Co.',
-    },
-    {
-      label: 'Category',
-      value: categoryName || 'Fine Jewelry',
-    },
-    {
-      label: 'SKU',
-      value: sku?.trim() || 'Available on request',
-    },
+  const specs = [
+    {label: 'Brand', value: vendor?.trim() || 'Gold Jewelry Co.'},
+    {label: 'Category', value: categoryName || 'Fine Jewelry'},
+    {label: 'SKU', value: sku?.trim() || 'Available on request'},
+    {label: 'Variant', value: selectedVariant?.title || 'Default selection'},
     {
       label: 'Availability',
-      value: selectedVariant?.availableForSale ? 'In stock' : 'Check availability',
-    },
-    {
-      label: 'Variant',
-      value: selectedVariant?.title || 'Default selection',
-    },
-    {
-      label: 'Description',
-      value: descriptionHtml ? 'See product description below' : 'Details will be updated soon',
+      value: selectedVariant?.availableForSale
+        ? 'In stock'
+        : 'Check availability',
     },
   ];
 
   return (
-    <div className="product-metadata-grid" aria-label="Product metadata">
-      {metadata.map((item) => (
-        <div className="product-metadata-card" key={item.label}>
-          <span className="product-metadata-label">{item.label}</span>
-          <span className="product-metadata-value">{item.value}</span>
+    <div className="product-accordions">
+      <details className="product-details">
+        <summary>Product Description</summary>
+        <div className="product-details-body">
+          {descriptionHtml ? (
+            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          ) : (
+            <p>Details for this piece will be updated soon.</p>
+          )}
         </div>
-      ))}
+      </details>
+
+      <details className="product-details">
+        <summary>Product Details</summary>
+        <div className="product-details-body">
+          <dl className="product-spec-list">
+            {specs.map((spec) => (
+              <div className="product-spec-row" key={spec.label}>
+                <dt>{spec.label}</dt>
+                <dd>{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </details>
+
+      <details className="product-details">
+        <summary>Size &amp; Fit</summary>
+        <div className="product-details-body">
+          <p>
+            Chains and necklaces are measured end to end, clasp included.
+            Lengths of 16&quot;–18&quot; sit at the collarbone; 20&quot;–24&quot;
+            fall below it. Ring and bracelet sizes follow standard U.S. sizing.
+            If you are between sizes, contact us before ordering and we will
+            help you choose.
+          </p>
+        </div>
+      </details>
     </div>
   );
 }
 
-function ProductFaqList({
-  title,
-  vendor,
-  categoryName,
-  sku,
-  selectedVariant,
-}: {
-  title: string;
-  vendor?: string | null;
-  categoryName: string;
-  sku?: string | null;
-  selectedVariant: any;
-}) {
-  const faqs = [
+type Faq = {question: string; answer: string};
+
+/**
+ * FAQs come from the product's `custom.faqs` metafield when it holds a JSON
+ * array of {question, answer}; otherwise the classic store-wide set renders
+ * so the section never looks empty.
+ */
+function buildFaqs(
+  product: any,
+  selectedVariant: any,
+  categoryName: string,
+): Faq[] {
+  const fromMetafield = parseFaqMetafield(product.faqs?.value);
+  if (fromMetafield) return fromMetafield;
+
+  return [
     {
-      question: `What is ${title}?`,
-      answer: `This ${categoryName || 'jewelry piece'} is sold by ${vendor || 'our store'}${sku ? ` and is tracked under SKU ${sku}` : ''}.`,
+      question: `What is ${product.title}?`,
+      answer: `This ${categoryName || 'jewelry piece'} is sold by ${product.vendor || 'our store'}${selectedVariant?.sku ? ` and is tracked under SKU ${selectedVariant.sku}` : ''}.`,
     },
     {
       question: 'What size or length options are available?',
       answer:
-        'If this product has multiple length options, you can switch between them above the product description.',
+        'Every available size, length, and metal option for this piece is shown above as a selectable tag. Options not listed are not currently offered.',
     },
     {
       question: 'Is it available right now?',
@@ -437,29 +414,46 @@ function ProductFaqList({
       answer:
         'We support shipping, returns, and warranty questions through our customer care team and the FAQ page.',
     },
-    {
-      question: 'Do you have more product-specific details?',
-      answer:
-        'Yes. If a product has extra metadata, we will surface it here. Otherwise, these temporary FAQs stay visible so the section never looks empty.',
-    },
   ];
+}
 
+function parseFaqMetafield(value?: string | null): Faq[] | null {
+  if (!value) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    const list = Array.isArray(parsed) ? parsed : (parsed as any)?.faqs;
+    if (!Array.isArray(list)) return null;
+    const faqs = list
+      .map((f: any) => ({
+        question: String(f?.question ?? f?.q ?? ''),
+        answer: String(f?.answer ?? f?.a ?? ''),
+      }))
+      .filter((f) => f.question && f.answer);
+    return faqs.length ? faqs : null;
+  } catch {
+    return null;
+  }
+}
+
+function ProductFaqSection({faqs}: {faqs: Faq[]}) {
+  if (!faqs.length) return null;
   return (
-    <div className="product-faqs">
-      <div className="product-faqs-header">
-        <h3>FAQs</h3>
+    <section className="pdp-faq-section">
+      <div className="section-inner">
+        <h2 className="pdp-faq-title">FAQs</h2>
+        <div className="pdp-faq-list">
+          {faqs.map((faq) => (
+            <details className="pdp-faq" key={faq.question}>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+        </div>
       </div>
-      <div className="product-faqs-list">
-        {faqs.map((faq) => (
-          <details className="product-faq-item" key={faq.question}>
-            <summary>{faq.question}</summary>
-            <p>{faq.answer}</p>
-          </details>
-        ))}
-      </div>
-    </div>
+    </section>
   );
 }
+
 
 function LengthArticleSelect({data}: {data: LengthArticles | null}) {
   const navigate = useNavigate();
@@ -467,30 +461,30 @@ function LengthArticleSelect({data}: {data: LengthArticles | null}) {
 
   return (
     <div className="product-options">
-      <label className="product-options-label" htmlFor="length-articles">
+      <span className="product-options-label" id="option-label-length">
         Length
-      </label>
-      <div className="product-select-wrap">
-        <select
-          id="length-articles"
-          className="product-select"
-          value={String(data.current)}
-          onChange={(event) => {
-            const target = data.options.find(
-              (option) => String(option.length) === event.target.value,
-            );
-            if (target) void navigate(`/products/${target.handle}`);
-          }}
-        >
-          {data.options.map((option) => (
-            <option key={option.handle} value={String(option.length)}>
+      </span>
+      <div
+        className="variant-tags"
+        role="group"
+        aria-labelledby="option-label-length"
+      >
+        {data.options.map((option) => {
+          const selected = option.length === data.current;
+          return (
+            <button
+              key={option.handle}
+              type="button"
+              className={`variant-tag${selected ? ' is-selected' : ''}`}
+              aria-pressed={selected}
+              onClick={() => {
+                if (!selected) void navigate(`/products/${option.handle}`);
+              }}
+            >
               {option.length}&quot;
-            </option>
-          ))}
-        </select>
-        <span className="product-select-caret" aria-hidden="true">
-          ▾
-        </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -498,34 +492,45 @@ function LengthArticleSelect({data}: {data: LengthArticles | null}) {
 
 function RelatedProducts({
   products,
+  viewAllTo,
 }: {
   products: Promise<ProductRecommendationsQuery | null>;
+  viewAllTo: string;
 }) {
   return (
-    <section className="home-section">
-      <div className="section-inner">
-        <div className="home-section-heading">
-          <span className="eyebrow">You may also like</span>
-          <h2>Related Products</h2>
+    <section className="pdp-similar">
+      <div className="section-inner pdp-similar-header">
+        <div>
+          <h2 className="pdp-similar-title">You May Also Like</h2>
+          <Link className="slider-viewall" to={viewAllTo}>
+            View all similar products
+          </Link>
         </div>
-        <Suspense fallback={null}>
-          <Await resolve={products}>
-            {(data) => {
-              const items = (data?.productRecommendations ?? []).slice(0, 8);
-              if (!items.length) return null;
-              return (
-                <ProductSlider
-                  eyebrow="You may also like"
-                  heading="Related Products"
-                  products={items}
-                  showHeading={false}
-                  showArrows
-                />
-              );
-            }}
-          </Await>
-        </Suspense>
       </div>
+      <Suspense fallback={null}>
+        <Await resolve={products}>
+          {(data) => {
+            const items = (data?.productRecommendations ?? []).slice(0, 8);
+            if (!items.length) return null;
+            return (
+              <HorizontalCarousel
+                className="slider-carousel"
+                ariaLabel="You may also like"
+                showButtons
+              >
+                {items.map((product, index) => (
+                  <ProductItem
+                    key={product.id}
+                    product={product}
+                    className="slider-item"
+                    loading={index < 4 ? 'eager' : undefined}
+                  />
+                ))}
+              </HorizontalCarousel>
+            );
+          }}
+        </Await>
+      </Suspense>
     </section>
   );
 }
@@ -606,6 +611,9 @@ const PRODUCT_FRAGMENT = `#graphql
     encodedVariantAvailability
     category {
       name
+    }
+    faqs: metafield(namespace: "custom", key: "faqs") {
+      value
     }
     media(first: 25) {
       nodes {

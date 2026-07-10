@@ -8,8 +8,8 @@ const FEATURES: {icon: ReactNode; title: string; sub: string}[] = [
   },
   {
     icon: <ReturnsIcon />,
-    title: '14 Day Returns',
-    sub: 'Terms & conditions apply',
+    title: '30 Day Returns',
+    sub: 'No questions asked',
   },
   {
     icon: <MadeInUsaIcon />,

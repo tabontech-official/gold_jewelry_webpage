@@ -11,7 +11,7 @@ export function ProductForm({
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
-  }) {
+}) {
   const navigate = useNavigate();
   const {open} = useAside();
   const [quantity, setQuantity] = useState(1);
@@ -23,58 +23,51 @@ export function ProductForm({
         // Don't render a picker for an option that has only one value.
         if (option.optionValues.length === 1) return null;
 
-        const current =
-          option.optionValues.find((value) => value.selected)?.name ?? '';
-
         return (
           <div className="product-options" key={option.name}>
-            <label
+            <span
               className="product-options-label"
-              htmlFor={`option-${option.name}`}
+              id={`option-label-${option.name}`}
             >
               {option.name}
-            </label>
-            <div className="product-select-wrap">
-              <select
-                id={`option-${option.name}`}
-                className="product-select"
-                value={current}
-                onChange={(event) => {
-                  const value = option.optionValues.find(
-                    (v) => v.name === event.target.value,
-                  );
-                  if (!value || value.selected) return;
+            </span>
+            <div
+              className="variant-tags"
+              role="group"
+              aria-labelledby={`option-label-${option.name}`}
+            >
+              {option.optionValues.map((value) => (
+                <button
+                  key={option.name + value.name}
+                  type="button"
+                  className={`variant-tag${value.selected ? ' is-selected' : ''}${
+                    !value.available ? ' is-unavailable' : ''
+                  }`}
+                  aria-pressed={value.selected}
+                  disabled={!value.exists && !value.isDifferentProduct}
+                  onClick={() => {
+                    if (value.selected) return;
 
-                  // A value that maps to a different product (combined listing)
-                  // takes the shopper straight to that product page; otherwise
-                  // we just update the variant search param in place.
-                  if (value.isDifferentProduct) {
-                    void navigate(
-                      `/products/${value.handle}?${value.variantUriQuery}`,
-                      {preventScrollReset: true},
-                    );
-                  } else {
-                    void navigate(`?${value.variantUriQuery}`, {
-                      replace: true,
-                      preventScrollReset: true,
-                    });
-                  }
-                }}
-              >
-                {option.optionValues.map((value) => (
-                  <option
-                    key={option.name + value.name}
-                    value={value.name}
-                    disabled={!value.exists && !value.isDifferentProduct}
-                  >
-                    {value.name}
-                    {!value.available ? ' — Sold out' : ''}
-                  </option>
-                ))}
-              </select>
-              <span className="product-select-caret" aria-hidden="true">
-                ▾
-              </span>
+                    // A value that maps to a different product (combined
+                    // listing) takes the shopper straight to that product
+                    // page; otherwise we just update the variant search
+                    // param in place.
+                    if (value.isDifferentProduct) {
+                      void navigate(
+                        `/products/${value.handle}?${value.variantUriQuery}`,
+                        {preventScrollReset: true},
+                      );
+                    } else {
+                      void navigate(`?${value.variantUriQuery}`, {
+                        replace: true,
+                        preventScrollReset: true,
+                      });
+                    }
+                  }}
+                >
+                  {value.name}
+                </button>
+              ))}
             </div>
           </div>
         );
@@ -95,7 +88,7 @@ export function ProductForm({
                 disabled={!selectedVariant || quantity <= 1}
                 aria-label="Decrease quantity"
               >
-                -
+                &minus;
               </button>
               <span className="product-quantity-value">{quantity}</span>
               <button
@@ -130,20 +123,14 @@ export function ProductForm({
                 : []
             }
           >
-            {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+            {selectedVariant?.availableForSale ? 'Add to Bag' : 'Sold Out'}
           </AddToCartButton>
         </div>
-
-        <Link
-          to="/policies/finance"
-          className="btn btn-outline product-finance-btn product-purchase-action"
-        >
-          Buy with Shop
-        </Link>
       </div>
 
       <p className="product-finance-note">
-        See flexible payment plans and installment options before checkout.
+        <Link to="/policies/finance">Flexible payment plans</Link> and
+        installment options are available before checkout.
       </p>
     </div>
   );

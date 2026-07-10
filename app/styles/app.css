@@ -1177,6 +1177,111 @@ button.reset:hover:not(:has(> *)) {
   font-family: var(--font-body);
 }
 
+.footer-newsletter-success {
+  color: var(--cg-champagne);
+  font-weight: 600;
+}
+
+.footer-newsletter-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+}
+
+/* Welcome offer popup */
+.welcome-popup-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 100;
+}
+
+.welcome-popup {
+  background: #fff;
+  border-top: 3px solid var(--cg-champagne);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 26rem;
+  padding: 2.4rem 2rem 1.6rem;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+.welcome-popup h2 {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.welcome-popup p {
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+
+.welcome-popup-eyebrow {
+  color: var(--cg-champagne);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.welcome-popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.welcome-popup-form input {
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  padding: 0.75rem 1rem;
+}
+
+.welcome-popup-code {
+  border: 1px dashed var(--cg-champagne);
+  color: var(--cg-champagne-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 0.6rem;
+  user-select: all;
+}
+
+.welcome-popup-close {
+  background: none;
+  border: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+  position: absolute;
+  right: 0.9rem;
+  top: 0.7rem;
+}
+
+.welcome-popup-dismiss {
+  background: none;
+  border: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.welcome-popup-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+}
+
 .footer-col h4 {
   color: #fff;
   font-family: var(--font-body);

@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {Await, Link, NavLink} from 'react-router';
+import {Await, Link, NavLink, useFetcher} from 'react-router';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 
 interface FooterProps {
@@ -151,25 +151,7 @@ export function Footer({
                 </div>
               </div>
 
-              <div className="footer-newsletter aside">
-                <div className="footer-newsletter-copy">
-                  <h3>GET AN EXTRA 10% OFF</h3>
-                  <p>when you sign up to receive SMS Updates</p>
-                </div>
-                <form className="footer-newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                  <input
-                    type="text"
-                    name="phone"
-                    placeholder="Enter Mobile Number"
-                    aria-label="Mobile number"
-                    required
-                  />
-                  <button type="submit" className="btn btn-primary">SUBSCRIBE</button>
-                </form>
-                <p style={{fontSize: '0.75rem', color: 'var(--color-ink-soft)'}}>
-                  By submitting this form, you agree to receive recurring automated promotional and personalized marketing text messages.
-                </p>
-              </div>
+              <NewsletterSignup />
             </div>
 
             <div className="footer-bottom">
@@ -189,6 +171,55 @@ export function Footer({
         )}
       </Await>
     </Suspense>
+  );
+}
+
+// Email signup wired to /api/subscribe. Success reveals the GOLD10 code —
+// the store's active 10%-off, one-use-per-customer discount.
+function NewsletterSignup() {
+  const fetcher = useFetcher<{success?: boolean; error?: string}>();
+
+  return (
+    <div className="footer-newsletter aside">
+      <div className="footer-newsletter-copy">
+        <h3>GET AN EXTRA 10% OFF</h3>
+        <p>when you sign up for email updates</p>
+      </div>
+      {fetcher.data?.success ? (
+        <p className="footer-newsletter-success">
+          You&rsquo;re on the list! Use code <strong>GOLD10</strong> at
+          checkout for 10% off.
+        </p>
+      ) : (
+        <fetcher.Form
+          className="footer-newsletter-form"
+          method="post"
+          action="/api/subscribe"
+        >
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter Email Address"
+            aria-label="Email address"
+            required
+          />
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={fetcher.state !== 'idle'}
+          >
+            {fetcher.state === 'idle' ? 'SUBSCRIBE' : 'SENDING…'}
+          </button>
+        </fetcher.Form>
+      )}
+      {fetcher.data?.error ? (
+        <p className="footer-newsletter-error">{fetcher.data.error}</p>
+      ) : null}
+      <p style={{fontSize: '0.75rem', color: 'var(--color-ink-soft)'}}>
+        By submitting this form, you agree to receive recurring automated
+        promotional and personalized marketing emails.
+      </p>
+    </div>
   );
 }
 

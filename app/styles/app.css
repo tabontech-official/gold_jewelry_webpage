@@ -2160,7 +2160,7 @@ button.reset:hover:not(:has(> *)) {
   animation: heroFade 10s infinite;
   background-position: right center;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: cover;
   filter: contrast(1.08) saturate(1.04);
   inset: 0;
   opacity: 0;
@@ -2324,10 +2324,8 @@ button.reset:hover:not(:has(> *)) {
     padding: 0;
   }
 
-  /* Box matches the 16:9 image, so the whole photo shows with no zoom/crop */
   .hero-bg {
     background-position: center;
-    background-size: cover;
   }
 
   .hero-inner {

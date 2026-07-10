@@ -13,11 +13,13 @@ export function enableDragScroll(el: HTMLElement): () => void {
   let moved = false;
   let startX = 0;
   let startScroll = 0;
+  let activePointerId: number | null = null;
 
   function onPointerDown(event: PointerEvent) {
     if (event.pointerType !== 'mouse' || event.button !== 0) return;
     down = true;
     moved = false;
+    activePointerId = event.pointerId;
     startX = event.clientX;
     startScroll = el.scrollLeft;
   }
@@ -28,14 +30,30 @@ export function enableDragScroll(el: HTMLElement): () => void {
     if (!moved && Math.abs(dx) > 4) {
       moved = true;
       el.classList.add('is-dragging');
+      try {
+        if (activePointerId !== null) el.setPointerCapture(activePointerId);
+      } catch {
+        /* pointer capture can fail if the pointer already ended */
+      }
     }
-    if (moved) el.scrollLeft = startScroll - dx;
+    if (moved) {
+      event.preventDefault();
+      el.scrollLeft = startScroll - dx;
+    }
   }
 
-  function onPointerUp() {
+  function onPointerUp(event: PointerEvent) {
     if (!down) return;
     down = false;
+    activePointerId = null;
     el.classList.remove('is-dragging');
+    try {
+      if (el.hasPointerCapture(event.pointerId)) {
+        el.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      /* pointer was already released */
+    }
   }
 
   function onClickCapture(event: MouseEvent) {
@@ -46,8 +64,8 @@ export function enableDragScroll(el: HTMLElement): () => void {
     }
   }
 
-  el.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('pointermove', onPointerMove);
+  el.addEventListener('pointerdown', onPointerDown, {passive: false});
+  window.addEventListener('pointermove', onPointerMove, {passive: false});
   window.addEventListener('pointerup', onPointerUp);
   el.addEventListener('click', onClickCapture, true);
 

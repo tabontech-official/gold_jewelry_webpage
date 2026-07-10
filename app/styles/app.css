@@ -3173,26 +3173,36 @@ button.reset:hover:not(:has(> *)) {
   top: auto;
   transform: none;
   z-index: 200;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 50%;
-  border: none;
-  background: var(--cg-champagne, #d4af37);
-  color: #fff;
-  font-size: 1.4rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 1.05rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
   transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .coverflow-arrow:hover {
-  background: var(--cg-champagne-dark, #b8912b);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 .coverflow-arrow:active {
@@ -3200,20 +3210,20 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .coverflow-arrow.is-prev {
-  left: calc(50% - 4.6rem);
+  left: calc(50% - 3.8rem);
 }
 
 .coverflow-arrow.is-next {
-  right: calc(50% - 4.6rem);
+  right: calc(50% - 3.8rem);
 }
 
 @media (min-width: 64em) {
   .coverflow-arrow.is-prev {
-    left: calc(50% - 4.6rem);
+    left: calc(50% - 3.8rem);
   }
 
   .coverflow-arrow.is-next {
-    right: calc(50% - 4.6rem);
+    right: calc(50% - 3.8rem);
   }
 }
 
@@ -3314,16 +3324,34 @@ button.reset:hover:not(:has(> *)) {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(0, 0, 0, 0.58);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 .carousel-btn-left { left: 0.5rem; }
@@ -4788,12 +4816,12 @@ button.reset:hover:not(:has(> *)) {
 .pdp-similar .hcarousel-btn {
   top: 2.9rem;
   transform: none;
-  width: 40px;
-  height: 40px;
+  width: 1.9rem;
+  height: 1.9rem;
 }
 
 .pdp-similar .hcarousel-btn:hover {
-  transform: scale(1.06);
+  transform: scale(1.04);
 }
 
 .pdp-similar .hcarousel-btn:disabled {
@@ -5068,21 +5096,32 @@ button.reset:hover:not(:has(> *)) {
 
 .slider-arrow {
   align-items: center;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 50%;
-  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(0, 0, 0, 0.58);
   display: flex;
-  height: 2.5rem;
+  height: 1.9rem;
   justify-content: center;
-  width: 2.5rem;
+  width: 1.9rem;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
   transition:
-    border-color 160ms ease,
-    color 160ms ease;
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .slider-arrow:hover {
-  border-color: var(--color-gold);
-  color: var(--color-gold-dark);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 /* ---- Lenis horizontal carousel ---- */
@@ -5126,30 +5165,38 @@ button.reset:hover:not(:has(> *)) {
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  width: 44px;
-  height: 44px;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 999px;
-  border: 1px solid var(--color-ink-soft);
-  background: var(--color-white, #fff);
-  color: var(--color-ink);
-  font-size: 1.6rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 1.05rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
   transition:
     opacity 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
     color 160ms ease,
-    border-color 160ms ease,
     transform 160ms ease;
 }
 
 .hcarousel-btn:hover {
-  border-color: var(--color-gold);
-  color: var(--color-gold-dark);
-  transform: translateY(-50%) scale(1.06);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  transform: translateY(-50%) scale(1.04);
 }
 
 .hcarousel-btn:disabled {
@@ -5362,6 +5409,7 @@ button.reset:hover:not(:has(> *)) {
   scrollbar-width: none;
   cursor: grab;
   scroll-behavior: smooth;
+  touch-action: pan-x;
 }
 
 .dragscroll-viewport::-webkit-scrollbar {
@@ -5374,6 +5422,12 @@ button.reset:hover:not(:has(> *)) {
   user-select: none;
 }
 
+.dragscroll-viewport.is-dragging img,
+.dragscroll-viewport.is-dragging a {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 .dragscroll-track {
   display: flex;
   gap: 1.25rem;
@@ -5381,38 +5435,42 @@ button.reset:hover:not(:has(> *)) {
   width: max-content;
 }
 
-/* Minimalist glowing swipe buttons */
+/* Minimalist iOS-style swipe buttons */
 .dragscroll-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
-  width: 3rem;
-  height: 3rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 50%;
-  border: 1px solid rgba(212, 175, 55, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: var(--cg-champagne-dark, #b8912b);
-  font-size: 1.5rem;
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 1.05rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
   transition:
-    box-shadow 0.3s ease,
-    background 0.3s ease,
-    color 0.3s ease,
-    transform 0.2s ease;
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .dragscroll-btn:hover {
-  background: var(--cg-champagne, #d4af37);
-  color: #fff;
-  box-shadow: 0 0 38px rgba(212, 175, 55, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 .dragscroll-btn:active {
@@ -5973,6 +6031,7 @@ button.reset:hover:not(:has(> *)) {
 
 .split-rail {
   min-width: 0;
+  padding-bottom: 2.45rem;
 }
 
 .split-intro {
@@ -6027,6 +6086,52 @@ button.reset:hover:not(:has(> *)) {
 .split-rail-item {
   flex: 0 0 auto;
   width: var(--rail-card-w);
+}
+
+.split-rail .dragscroll-btn {
+  top: auto;
+  bottom: 0.1rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 1.05rem;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
+  transform: none;
+}
+
+.split-rail .dragscroll-btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+.split-rail .dragscroll-btn:active {
+  transform: scale(0.94);
+}
+
+.split-rail .dragscroll-btn.is-prev {
+  left: calc(50% - min(34vw, 145px));
+}
+
+.split-rail .dragscroll-btn.is-next {
+  right: calc(50% - min(34vw, 145px));
+}
+
+.split-rail .dragscroll-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  width: min(190px, calc(68vw - 5.25rem));
+  height: 2px;
+  margin: 0;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .split-viewall {

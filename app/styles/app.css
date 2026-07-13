@@ -3578,6 +3578,23 @@ button.reset:hover:not(:has(> *)) {
   margin-bottom: 2rem;
 }
 
+/* Mobile: force 2 smaller cards per row instead of one huge one */
+@media (max-width: 48em) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 0.75rem;
+  }
+
+  .product-item {
+    gap: 0.55rem;
+    padding: 0.5rem;
+  }
+
+  .product-item-copy h4 {
+    font-size: 0.82rem;
+  }
+}
+
 /* Load More */
 .load-more-bar {
   display: flex;

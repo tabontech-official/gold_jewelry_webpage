@@ -8,14 +8,14 @@ import {CATEGORIES} from '~/lib/categories';
  * "Shop by Category" section so the visuals stay identical site-wide.
  */
 const CATEGORY_IMAGES: Record<string, string> = {
-  rings: '/gold%20ring.jpg',
-  chains: '/chain.jpg',
-  bracelets: '/bracelet.jpg',
-  earrings: '/earring.jpg',
-  pendants: '/pandents.jpg',
-  necklaces: '/neckles.jpg',
-  diamond: '/dimond.jpg',
-  'engagement-rings': '/enganment.jpg',
+  rings: '/gold%20ring.webp',
+  chains: '/chain.webp',
+  bracelets: '/bracelet.webp',
+  earrings: '/earring.webp',
+  pendants: '/pandents.webp',
+  necklaces: '/neckles.webp',
+  diamond: '/dimond.webp',
+  'engagement-rings': '/enganment.webp',
 };
 
 export function ShopByCategory({

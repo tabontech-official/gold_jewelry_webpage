@@ -30,14 +30,14 @@ function displayTitle(collection?: {handle: string; title: string} | null) {
 
 const COLLECTION_PRODUCT_BREAKS = [
   {
-    image: '/cover3.png',
+    image: '/cover3.webp',
     eyebrow: 'Women\'s Diamond Jewelry',
     title: 'Radiant diamonds made to hold the moment.',
     variant: 'cover3',
     align: 'left',
   },
   {
-    image: '/cover4.png',
+    image: '/cover4.webp',
     eyebrow: 'Men\'s Diamond Studs',
     title: 'Sharp brilliance, built for everyday presence.',
     variant: 'cover4',

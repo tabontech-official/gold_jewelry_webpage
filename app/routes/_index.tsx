@@ -325,14 +325,14 @@ export function TrustPromise({badges}: {badges: typeof TRUST_PROMISES}) {
 
 export function ShopByCategory({categories}: {categories: CategoryTile[] | any[]}) {
   const publicImages: Record<string, string> = {
-    rings: '/gold%20ring.jpg',
-    chains: '/chain.jpg',
-    bracelets: '/bracelet.jpg',
-    earrings: '/earring.jpg',
-    pendants: '/pandents.jpg',
-    necklaces: '/neckles.jpg',
-    diamond: '/dimond.jpg',
-    'engagement-rings': '/enganment.jpg',
+    rings: '/gold%20ring.webp',
+    chains: '/chain.webp',
+    bracelets: '/bracelet.webp',
+    earrings: '/earring.webp',
+    pendants: '/pandents.webp',
+    necklaces: '/neckles.webp',
+    diamond: '/dimond.webp',
+    'engagement-rings': '/enganment.webp',
   };
   return (
     <section className="home-section">
@@ -477,7 +477,7 @@ function DiamondValueSection() {
       <div className="section-inner">
         <div className="diamond-value-visual">
           <img
-            src="/cover%202.jpg"
+            src="/cover%202.webp"
             alt="Diamond jewelry craftsmanship and value assurance"
           />
           <h2 className="diamond-value-heading is-left">
@@ -615,7 +615,7 @@ const FEATURED_COLLECTION_QUERY = `#graphql
       height
     }
     handle
-    products(first: 50) {
+    products(first: 12) {
       nodes {
         id
         title
@@ -755,7 +755,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 50, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 12, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }
@@ -763,9 +763,9 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
 ` as const;
 
-// ponytail: 50 products per tab is effectively endless for a horizontal rail.
-// Swap to cursor pagination + fetch-on-scroll-end only if a real store ever
-// needs to browse past 50 here.
+// ponytail: 12 products per tab is plenty for a horizontal rail. Swap to
+// cursor pagination + fetch-on-scroll-end only if a real store ever needs to
+// browse past 12 here.
 const BEST_SELLING_PRODUCTS_QUERY = `#graphql
   fragment BestSellingProduct on Product {
     id
@@ -791,7 +791,7 @@ const BEST_SELLING_PRODUCTS_QUERY = `#graphql
   }
   query BestSellingProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 50, sortKey: BEST_SELLING) {
+    products(first: 12, sortKey: BEST_SELLING) {
       nodes {
         ...BestSellingProduct
       }
@@ -826,14 +826,14 @@ const NEW_ARRIVALS_BY_GENDER_QUERY = `#graphql
   query NewArrivalsByGender($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     womens: collection(handle: "womens") {
-      products(first: 50, sortKey: CREATED, reverse: true) {
+      products(first: 12, sortKey: CREATED, reverse: true) {
         nodes {
           ...GenderArrivalProduct
         }
       }
     }
     mens: collection(handle: "mens") {
-      products(first: 50, sortKey: CREATED, reverse: true) {
+      products(first: 12, sortKey: CREATED, reverse: true) {
         nodes {
           ...GenderArrivalProduct
         }

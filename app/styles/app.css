@@ -2284,12 +2284,12 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .hero-bg-cover {
-  background-image: url('/cover.jpg');
+  background-image: url('/cover.webp');
 }
 
 .hero-bg-cover-alt {
   animation-delay: 5s;
-  background-image: url('/cover1.jpg');
+  background-image: url('/cover1.webp');
 }
 
 .hero-inner {

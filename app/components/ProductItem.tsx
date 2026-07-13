@@ -66,7 +66,7 @@ export function ProductItem({
               aspectRatio="1/1"
               data={image}
               className="product-image"
-              loading={loading}
+              loading={loading ?? 'lazy'}
               sizes="(min-width: 45em) 400px, 100vw"
             />
           )}

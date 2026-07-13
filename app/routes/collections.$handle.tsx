@@ -270,7 +270,7 @@ export default function Collection() {
                                 loading={
                                   rowIndex === 0 && productIndex < 8
                                     ? 'eager'
-                                    : undefined
+                                    : 'lazy'
                                 }
                               />
                             ))}

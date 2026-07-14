@@ -901,6 +901,30 @@ export type NewArrivalsByGenderQuery = {
   }>;
 };
 
+export type HomeArticlesQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type HomeArticlesQuery = {
+  articles: {
+    nodes: Array<
+      Pick<
+        StorefrontAPI.Article,
+        'id' | 'title' | 'handle' | 'excerpt' | 'publishedAt'
+      > & {
+        blog: Pick<StorefrontAPI.Blog, 'handle'>;
+        image?: StorefrontAPI.Maybe<
+          Pick<
+            StorefrontAPI.Image,
+            'id' | 'altText' | 'url' | 'width' | 'height'
+          >
+        >;
+      }
+    >;
+  };
+};
+
 export type ProductNodeFragment = Pick<
   StorefrontAPI.Product,
   'id' | 'title' | 'handle' | 'tags'
@@ -2063,17 +2087,21 @@ interface GeneratedQueryTypes {
     return: HeroContentQuery;
     variables: HeroContentQueryVariables;
   };
-  '#graphql\n  fragment RecommendedProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 12, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...RecommendedProduct\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment RecommendedProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 24, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...RecommendedProduct\n      }\n    }\n  }\n': {
     return: RecommendedProductsQuery;
     variables: RecommendedProductsQueryVariables;
   };
-  '#graphql\n  fragment BestSellingProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query BestSellingProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 12, sortKey: BEST_SELLING) {\n      nodes {\n        ...BestSellingProduct\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment BestSellingProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query BestSellingProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 24, sortKey: BEST_SELLING) {\n      nodes {\n        ...BestSellingProduct\n      }\n    }\n  }\n': {
     return: BestSellingProductsQuery;
     variables: BestSellingProductsQueryVariables;
   };
-  '#graphql\n  fragment GenderArrivalProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query NewArrivalsByGender($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    womens: collection(handle: "womens") {\n      products(first: 12, sortKey: CREATED, reverse: true) {\n        nodes {\n          ...GenderArrivalProduct\n        }\n      }\n    }\n    mens: collection(handle: "mens") {\n      products(first: 12, sortKey: CREATED, reverse: true) {\n        nodes {\n          ...GenderArrivalProduct\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment GenderArrivalProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n  }\n  query NewArrivalsByGender($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    womens: collection(handle: "womens") {\n      products(first: 24, sortKey: CREATED, reverse: true) {\n        nodes {\n          ...GenderArrivalProduct\n        }\n      }\n    }\n    mens: collection(handle: "mens") {\n      products(first: 24, sortKey: CREATED, reverse: true) {\n        nodes {\n          ...GenderArrivalProduct\n        }\n      }\n    }\n  }\n': {
     return: NewArrivalsByGenderQuery;
     variables: NewArrivalsByGenderQueryVariables;
+  };
+  '#graphql\n  query HomeArticles($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    articles(first: 8, sortKey: PUBLISHED_AT, reverse: true) {\n      nodes {\n        id\n        title\n        handle\n        excerpt\n        publishedAt\n        blog {\n          handle\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n      }\n    }\n  }\n': {
+    return: HomeArticlesQuery;
+    variables: HomeArticlesQueryVariables;
   };
   '#graphql\n        fragment ProductNode on Product {\n          id\n          title\n          handle\n          tags\n          selectedOrFirstAvailableVariant {\n            id\n            availableForSale\n          }\n          variants(first: 1) {\n            nodes {\n              id\n              availableForSale\n            }\n          }\n          priceRange {\n            minVariantPrice {\n              amount\n              currencyCode\n            }\n          }\n          featuredImage {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n\n        query CollectionProducts($q: String, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {\n          products(first: 48, query: $q) {\n            nodes {\n              ...ProductNode\n            }\n          }\n        }\n      ': {
     return: CollectionProductsQuery;

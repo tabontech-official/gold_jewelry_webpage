@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import type {CSSProperties} from 'react';
 import {useNavigate, Link} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
@@ -14,8 +14,6 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
-  const [quantity, setQuantity] = useState(1);
-  const maxQuantity = 99;
 
   return (
     <div className="product-form">
@@ -43,6 +41,7 @@ export function ProductForm({
                   className={`variant-tag${value.selected ? ' is-selected' : ''}${
                     !value.available ? ' is-unavailable' : ''
                   }`}
+                  style={getVariantTagStyle(option.name, value.name)}
                   aria-pressed={value.selected}
                   disabled={!value.exists && !value.isDifferentProduct}
                   onClick={() => {
@@ -74,58 +73,26 @@ export function ProductForm({
       })}
 
       <div className="product-purchase-grid">
-        <div className="product-purchase-row">
-          <div className="product-quantity-block">
-            <span className="product-quantity-label">Quantity</span>
-            <div
-              className="product-quantity-stepper"
-              aria-label="Product quantity"
-            >
-              <button
-                type="button"
-                className="product-quantity-btn"
-                onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                disabled={!selectedVariant || quantity <= 1}
-                aria-label="Decrease quantity"
-              >
-                &minus;
-              </button>
-              <span className="product-quantity-value">{quantity}</span>
-              <button
-                type="button"
-                className="product-quantity-btn"
-                onClick={() =>
-                  setQuantity((current) => Math.min(maxQuantity, current + 1))
-                }
-                disabled={!selectedVariant || quantity >= maxQuantity}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <AddToCartButton
-            className="btn btn-primary product-atc product-purchase-action"
-            disabled={!selectedVariant || !selectedVariant.availableForSale}
-            onClick={() => {
-              open('cart');
-            }}
-            lines={
-              selectedVariant
-                ? [
-                    {
-                      merchandiseId: selectedVariant.id,
-                      quantity,
-                      selectedVariant,
-                    },
-                  ]
-                : []
-            }
-          >
-            {selectedVariant?.availableForSale ? 'Add to Bag' : 'Sold Out'}
-          </AddToCartButton>
-        </div>
+        <AddToCartButton
+          className="btn btn-primary product-atc product-purchase-action"
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          onClick={() => {
+            open('cart');
+          }}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+        >
+          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold Out'}
+        </AddToCartButton>
       </div>
 
       <p className="product-finance-note">
@@ -134,4 +101,27 @@ export function ProductForm({
       </p>
     </div>
   );
+}
+
+function getVariantTagStyle(optionName: string, valueName: string) {
+  if (!/color|metal|finish/i.test(optionName)) return undefined;
+
+  const value = valueName.toLowerCase();
+  if (value.includes('yellow')) {
+    return {'--variant-bg': '#f7d672'} as CSSProperties;
+  }
+  if (value.includes('white')) {
+    return {'--variant-bg': '#d9d9d9'} as CSSProperties;
+  }
+  if (value.includes('rose')) {
+    return {'--variant-bg': '#f0aaaa'} as CSSProperties;
+  }
+  if (value.includes('black')) {
+    return {
+      '--variant-bg': '#111111',
+      '--variant-fg': '#ffffff',
+    } as CSSProperties;
+  }
+
+  return undefined;
 }

@@ -1,5 +1,6 @@
-import {useMemo} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {Image} from '@shopify/hydrogen';
+import type Hls from 'hls.js';
 
 export type GalleryMedia = {
   key: string;
@@ -55,19 +56,53 @@ export function ProductGallery({
     }
     return list;
   }, [media, selectedImageUrl, title]);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveKey(null);
+  }, [selectedImageUrl]);
 
   if (!items.length) {
     return <div className="product-gallery-empty" aria-hidden="true" />;
   }
 
-  // 5+ media simply continue the two-column square grid, row by row.
-  const count = Math.min(items.length, 4);
+  const activeItem = items.find((item) => item.key === activeKey) ?? items[0];
+  const thumbs = items.slice(0, 5);
 
   return (
-    <div className="product-grid-gallery" data-count={count}>
-      {items.map((m) => (
-        <GalleryTile key={m.key} media={m} title={title} />
-      ))}
+    <div className="product-grid-gallery">
+      <GalleryTile media={activeItem} title={title} featured />
+      {thumbs.length > 1 && (
+        <div className="pgg-thumbs" aria-label="Product media">
+          {thumbs.map((m) => {
+            const selected = m.key === activeItem.key;
+            return (
+              <button
+                className={`pgg-thumb ${selected ? 'is-selected' : ''}`}
+                key={m.key}
+                type="button"
+                aria-label={`View ${mediaLabel(m.kind)}`}
+                aria-pressed={selected}
+                onClick={() => setActiveKey(m.key)}
+              >
+                <GalleryThumb media={m} title={title} />
+                {m.kind !== 'image' && (
+                  <span className="pgg-video-mark" aria-hidden="true">
+                    ▶
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className="pgg-preload" aria-hidden="true">
+        {items
+          .filter((m) => m.kind === 'image' && m.image?.url)
+          .map((m) => (
+            <img key={m.key} src={m.image!.url} alt="" loading="eager" />
+          ))}
+      </div>
     </div>
   );
 }
@@ -81,13 +116,37 @@ export function ProductGallery({
 const isHls = (mime?: string | null) => /mpegurl/i.test(mime ?? '');
 
 function playableSources(sources: NonNullable<GalleryMedia['sources']>) {
-  const mp4 = sources.filter((s) => !isHls(s.mimeType));
+  const mp4 = sources.filter(
+    (s) => /mp4/i.test(s.mimeType ?? '') || /\.mp4(?:\?|$)/i.test(s.url),
+  );
   return mp4.length ? mp4 : sources;
 }
 
-function GalleryTile({media: m, title}: {media: GalleryMedia; title: string}) {
+function GalleryThumb({media: m, title}: {media: GalleryMedia; title: string}) {
+  const thumbUrl = m.kind === 'image' ? m.image?.url : m.thumbUrl;
+
   return (
-    <div className="pgg-tile">
+    <span className="pgg-tile">
+      {thumbUrl ? (
+        <img src={thumbUrl} alt={m.alt || title} loading="eager" />
+      ) : (
+        <span className="pgg-thumb-fallback" />
+      )}
+    </span>
+  );
+}
+
+function GalleryTile({
+  media: m,
+  title,
+  featured = false,
+}: {
+  media: GalleryMedia;
+  title: string;
+  featured?: boolean;
+}) {
+  return (
+    <div className={featured ? 'pgg-feature' : 'pgg-tile'}>
       {m.kind === 'image' && m.image ? (
         <Image
           data={{
@@ -97,26 +156,16 @@ function GalleryTile({media: m, title}: {media: GalleryMedia; title: string}) {
             height: m.image.height ?? undefined,
           }}
           alt={m.image.altText || m.alt || title}
-          sizes="(min-width: 48em) 30vw, 50vw"
+          sizes={featured ? '(min-width: 48em) 52vw, 100vw' : '96px'}
           loading="eager"
         />
       ) : m.kind === 'video' && m.sources?.length ? (
-        // eslint-disable-next-line jsx-a11y/media-has-caption
-        <video
-          className="pgg-media"
-          controls
-          playsInline
-          preload="metadata"
-          poster={m.thumbUrl || undefined}
-        >
-          {playableSources(m.sources).map((source) => (
-            <source
-              key={source.url}
-              src={source.url}
-              type={source.mimeType || undefined}
-            />
-          ))}
-        </video>
+        <VideoPlayer
+          key={m.key}
+          sources={m.sources}
+          poster={m.thumbUrl}
+          preload={featured ? 'auto' : 'metadata'}
+        />
       ) : m.kind === 'external' && m.embedUrl ? (
         <iframe
           className="pgg-media"
@@ -128,4 +177,71 @@ function GalleryTile({media: m, title}: {media: GalleryMedia; title: string}) {
       ) : null}
     </div>
   );
+}
+
+function VideoPlayer({
+  sources,
+  poster,
+  preload,
+}: {
+  sources: NonNullable<GalleryMedia['sources']>;
+  poster?: string | null;
+  preload: 'auto' | 'metadata';
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const orderedSources = playableSources(sources);
+  const hlsSource = sources.find((source) => isHls(source.mimeType));
+  const hasMp4 = orderedSources.some(
+    (source) => /mp4/i.test(source.mimeType ?? '') || /\.mp4(?:\?|$)/i.test(source.url),
+  );
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || hasMp4 || !hlsSource?.url) return;
+
+    let hls: Hls | null = null;
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = hlsSource.url;
+      return;
+    }
+
+    void import('hls.js').then(({default: Hls}) => {
+      if (!videoRef.current || !Hls.isSupported()) return;
+      hls = new Hls();
+      hls.loadSource(hlsSource.url);
+      hls.attachMedia(videoRef.current);
+    });
+
+    return () => {
+      hls?.destroy();
+    };
+  }, [hasMp4, hlsSource?.url]);
+
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <video
+      ref={videoRef}
+      className="pgg-media"
+      controls
+      playsInline
+      preload={preload}
+      poster={poster || undefined}
+    >
+      {hasMp4 &&
+        orderedSources.map((source) => (
+          <source
+            key={source.url}
+            src={source.url}
+            type={source.mimeType || undefined}
+          />
+        ))}
+    </video>
+  );
+}
+
+function mediaLabel(kind: GalleryMedia['kind']) {
+  if (kind === 'video') return 'product video';
+  if (kind === 'external') return 'product video';
+  return 'product image';
 }

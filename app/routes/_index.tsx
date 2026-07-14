@@ -1,6 +1,6 @@
 import {Await, useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/_index';
-import {Suspense, useState} from 'react';
+import {Suspense, useEffect, useRef, useState} from 'react';
 import type {
   RecommendedProductsQuery,
   NewArrivalsByGenderQuery,
@@ -362,7 +362,10 @@ export function ShopByCategory({categories}: {categories: CategoryTile[] | any[]
   );
 }
 
-// A single-row, swipeable product rail with the thin iOS scrollbar.
+const RAIL_BATCH = 8; // products shown initially and revealed per scroll-to-end
+
+// A single-row, swipeable product rail. Renders a batch and appends the next
+// batch as the end scrolls into view, so more pieces appear as you scroll.
 function ProductRail({
   products,
   ariaLabel,
@@ -372,17 +375,37 @@ function ProductRail({
   ariaLabel: string;
   emptyMessage?: string;
 }) {
+  const [shown, setShown] = useState(RAIL_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Reset when the product set changes (e.g. switching tabs).
+  useEffect(() => setShown(RAIL_BATCH), [products]);
+
+  const hasMore = shown < products.length;
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShown((s) => Math.min(s + RAIL_BATCH, products.length));
+        }
+      },
+      {rootMargin: '0px 400px'}, // reveal a bit before the true end
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, products.length]);
+
   if (!products.length) {
     return <p className="recommended-products-empty">{emptyMessage}</p>;
   }
+
   return (
-    <DragScroller
-      className="split-rail"
-      ariaLabel={ariaLabel}
-      showButtons
-      showScrollbar
-    >
-      {products.map((product: any, index: number) => (
+    <DragScroller className="split-rail" ariaLabel={ariaLabel} showScrollbar>
+      {products.slice(0, shown).map((product: any, index: number) => (
         <ProductItem
           key={product.id}
           product={product}
@@ -390,6 +413,13 @@ function ProductRail({
           loading={index < 4 ? 'eager' : undefined}
         />
       ))}
+      {hasMore && (
+        <div
+          ref={sentinelRef}
+          className="split-rail-sentinel"
+          aria-hidden="true"
+        />
+      )}
     </DragScroller>
   );
 }
@@ -440,20 +470,6 @@ function FeaturedProducts({
           <Link className="editorial-viewall split-viewall" to={`/collections/${collection.handle}`}>
             View All &rarr;
           </Link>
-          <div className="split-intro">
-            <h3 className="split-intro-title">Built to Become an Heirloom</h3>
-            <p className="split-intro-copy">
-              Every piece is hand-finished in our atelier, cast in solid gold,
-              and backed by a lifetime warranty &mdash; jewelry made to be
-              passed down, not just worn.
-            </p>
-            <Link
-              className="split-intro-cta"
-              to={`/collections/${collection.handle}`}
-            >
-              Explore {collection.title} &rarr;
-            </Link>
-          </div>
 
           {tab === 'featured' ? (
             <ProductRail
@@ -524,7 +540,7 @@ function RecommendedProducts({
             <h2 className="editorial-title">New Arrivals</h2>
           </div>
         </div>
-        <div className="split-showcase is-reversed">
+        <div className="split-showcase">
           <div className="tab-switch" role="tablist" aria-label="New arrivals filter">
             {(['all', 'women', 'men'] as const).map((value) => (
               <button
@@ -571,15 +587,6 @@ function RecommendedProducts({
               </Await>
             </Suspense>
           )}
-
-          <div className="split-intro">
-            <span className="eyebrow">Customer Love</span>
-            <h3 className="split-intro-title">Trusted by Thousands</h3>
-            <p className="split-intro-copy">
-              Rated 4.9 out of 5 by over 12,000 customers, every order ships
-              fully insured with a 30-day no-questions-asked return policy.
-            </p>
-          </div>
         </div>
       </div>
     </section>
@@ -764,7 +771,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 12, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 24, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }
@@ -772,9 +779,8 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
 ` as const;
 
-// ponytail: 12 products per tab is plenty for a horizontal rail. Swap to
-// cursor pagination + fetch-on-scroll-end only if a real store ever needs to
-// browse past 12 here.
+// ponytail: 24 fetched up front; the rail reveals them in batches as you
+// scroll. Swap to cursor pagination only if a store needs to browse past 24.
 const BEST_SELLING_PRODUCTS_QUERY = `#graphql
   fragment BestSellingProduct on Product {
     id
@@ -800,7 +806,7 @@ const BEST_SELLING_PRODUCTS_QUERY = `#graphql
   }
   query BestSellingProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 12, sortKey: BEST_SELLING) {
+    products(first: 24, sortKey: BEST_SELLING) {
       nodes {
         ...BestSellingProduct
       }
@@ -835,14 +841,14 @@ const NEW_ARRIVALS_BY_GENDER_QUERY = `#graphql
   query NewArrivalsByGender($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     womens: collection(handle: "womens") {
-      products(first: 12, sortKey: CREATED, reverse: true) {
+      products(first: 24, sortKey: CREATED, reverse: true) {
         nodes {
           ...GenderArrivalProduct
         }
       }
     }
     mens: collection(handle: "mens") {
-      products(first: 12, sortKey: CREATED, reverse: true) {
+      products(first: 24, sortKey: CREATED, reverse: true) {
         nodes {
           ...GenderArrivalProduct
         }

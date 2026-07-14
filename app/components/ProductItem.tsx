@@ -71,19 +71,10 @@ export function ProductItem({
             />
           )}
         </Link>
-      </div>
 
-      <div className="product-card-body">
-        <Link prefetch="intent" to={productUrl} className="product-item-copy">
-          <h4>{product.title}</h4>
-        </Link>
-
-        <div className="product-card-actions">
+        {/* Heart + cart appear over the image on hover (always shown on touch). */}
+        <div className="product-hover-actions">
           <WishlistButton handle={product.handle} wished={wished} />
-
-          <div className="product-card-price">
-            <Money data={product.priceRange.minVariantPrice} />
-          </div>
 
           {variantId ? (
             <AddToCartButton
@@ -103,6 +94,15 @@ export function ProductItem({
               <CartIcon />
             </Link>
           )}
+        </div>
+      </div>
+
+      <div className="product-card-body">
+        <Link prefetch="intent" to={productUrl} className="product-item-copy">
+          <h4>{product.title}</h4>
+        </Link>
+        <div className="product-card-price">
+          <Money data={product.priceRange.minVariantPrice} />
         </div>
       </div>
     </article>

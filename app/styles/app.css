@@ -2996,7 +2996,7 @@ button.reset:hover:not(:has(> *)) {
   position: relative;
   margin: 0 auto;
   max-width: 1280px;
-  padding: 1rem clamp(3rem, 8vw, 6rem) 3.75rem;
+  padding: 1rem clamp(3rem, 8vw, 6rem) 1.5rem;
 }
 
 .coverflow-stage {
@@ -3017,24 +3017,12 @@ button.reset:hover:not(:has(> *)) {
   background: var(--cg-white, #fff);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.13);
   transform-style: preserve-3d;
-  transform: translate(-50%, -50%) translateX(calc(var(--offset) * 86%))
-    scale(calc(1 - var(--abs) * 0.12)) rotateY(calc(var(--offset) * -12deg));
-  filter: brightness(calc(1 - var(--abs) * 0.05));
+  transform-origin: center center;
   cursor: pointer;
+  /* transform / opacity / filter are set inline every frame by the component's
+     eased scroll loop — NO CSS transition here, or it would smear the per-frame
+     updates and bring back the jank. */
   will-change: transform, opacity;
-  /* Single silky spring-like curve on transform + opacity; no blur animation
-     (blur repaints every frame across all cards and is the main source of jank). */
-  transition:
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.7s ease,
-    opacity 0.55s ease,
-    box-shadow 0.7s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .coverflow-card {
-    transition-duration: 0.001ms;
-  }
 }
 
 .coverflow-card::before {
@@ -3249,9 +3237,6 @@ button.reset:hover:not(:has(> *)) {
   .coverflow-card {
     width: clamp(250px, 72vw, 340px);
     height: clamp(330px, 90vw, 430px);
-    transform: translate(-50%, -50%) translateX(calc(var(--offset) * 72%))
-      scale(calc(1 - var(--abs) * 0.12)) rotateY(calc(var(--offset) * -10deg));
-    filter: blur(calc(var(--abs) * 0.45px)) brightness(calc(1 - var(--abs) * 0.02));
   }
 
   .coverflow-card-body {
@@ -4156,22 +4141,7 @@ button.reset:hover:not(:has(> *)) {
   color: var(--color-ink-soft);
 }
 
-/* Heart / price / cart action row — matches the card design */
-.product-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.product-card-actions form {
-  display: flex;
-  flex: 0 0 auto;
-  margin: 0;
-}
-
 .product-card-price {
-  flex: 1;
   text-align: center;
   font-weight: 700;
   font-size: 1.05rem;
@@ -4179,33 +4149,107 @@ button.reset:hover:not(:has(> *)) {
   white-space: nowrap;
 }
 
+/* Heart + cart, revealed over the image on hover. */
+.product-hover-actions {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  pointer-events: none; /* let clicks fall through to the image link except on the buttons */
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.product-hover-actions form {
+  display: flex;
+  margin: 0;
+}
+
+/* Cart sits top-left, heart top-right. */
+.product-hover-actions .product-cart-btn {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+}
+
+.product-hover-actions .product-wishlist {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+}
+
+.product-item:hover .product-hover-actions,
+.product-item:focus-within .product-hover-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .product-wishlist,
 .product-cart-btn {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   flex: 0 0 auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--color-ink);
   cursor: pointer;
   text-decoration: none;
-  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
+.product-wishlist svg,
+.product-cart-btn svg {
+  width: 38px;
+  height: 38px;
+}
+
+/* Hover: stronger small blur behind the button + gold highlight ring. */
 .product-wishlist:hover,
 .product-cart-btn:hover {
-  border-color: var(--color-gold);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--color-gold-dark);
+  border-color: var(--color-gold);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.16),
+    0 0 0 2px rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+}
+
+.product-wishlist.is-active {
+  color: #e2564d;
 }
 
 .product-cart-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* No hover on touch devices — keep the actions visible so they're reachable. */
+@media (hover: none) {
+  .product-hover-actions {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .product-wishlist.is-active {
@@ -5993,7 +6037,7 @@ button.reset:hover:not(:has(> *)) {
 .trust-promise-section {
   position: relative;
   overflow: hidden;
-  padding: 3rem 0;
+  padding: 1.75rem 0 3rem;
 }
 
 .trust-promise-section::before {
@@ -6378,7 +6422,8 @@ button.reset:hover:not(:has(> *)) {
 * --------------------------------------------------
 */
 :root {
-  --rail-card-w: 210px;
+  /* Bigger cards now that the rail spans full width (no side panel). */
+  --rail-card-w: clamp(260px, 30vw, 340px);
 }
 
 .split-showcase {
@@ -6396,14 +6441,8 @@ button.reset:hover:not(:has(> *)) {
 
 @media (min-width: 60em) {
   .split-showcase {
-    grid-template-columns: minmax(220px, 0.55fr) 1fr;
-    gap: 2.5rem;
-    align-items: center;
+    gap: 2rem;
     padding: 3rem 2.5rem 2.5rem;
-  }
-
-  .split-showcase.is-reversed {
-    grid-template-columns: 1fr minmax(220px, 0.55fr);
   }
 }
 
@@ -6466,6 +6505,14 @@ button.reset:hover:not(:has(> *)) {
   width: var(--rail-card-w);
 }
 
+/* End marker for the IntersectionObserver that reveals more products. Needs a
+   little width so it sits in the horizontal flow and can be scrolled to. */
+.split-rail-sentinel {
+  flex: 0 0 auto;
+  width: 1px;
+  align-self: stretch;
+}
+
 .split-rail .dragscroll-btn {
   top: auto;
   bottom: 0.1rem;
@@ -6505,7 +6552,7 @@ button.reset:hover:not(:has(> *)) {
   position: absolute;
   left: 50%;
   bottom: 1rem;
-  width: min(190px, calc(68vw - 5.25rem));
+  width: min(360px, calc(90vw - 5.25rem));
   height: 2px;
   margin: 0;
   transform: translateX(-50%);

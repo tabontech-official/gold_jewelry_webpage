@@ -105,10 +105,18 @@ function loadDeferredData({context}: Route.LoaderArgs) {
       return null;
     });
 
+  const journalArticles = context.storefront
+    .query(HOME_ARTICLES_QUERY)
+    .catch((error: Error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     recommendedProducts,
     bestSellingProducts,
     genderNewArrivals,
+    journalArticles,
   };
 }
 
@@ -128,6 +136,7 @@ export default function Homepage() {
         collection={data.featuredCollection}
         bestSelling={data.bestSellingProducts}
       />
+      <HomeJournal articles={data.journalArticles} />
       <PromiseTicker />
     </div>
   );
@@ -836,6 +845,140 @@ const NEW_ARRIVALS_BY_GENDER_QUERY = `#graphql
       products(first: 12, sortKey: CREATED, reverse: true) {
         nodes {
           ...GenderArrivalProduct
+        }
+      }
+    }
+  }
+` as const;
+
+type JournalArticle = {
+  id: string;
+  title: string;
+  handle: string;
+  excerpt?: string | null;
+  publishedAt?: string | null;
+  blog: {handle: string};
+  image?: {
+    id?: string | null;
+    altText?: string | null;
+    url: string;
+    width?: number | null;
+    height?: number | null;
+  } | null;
+};
+
+// Homepage "From the Journal" rail: recent blog articles in a touch/drag
+// scroller, reusing the same .blog-card look as the blog pages.
+function HomeJournal({
+  articles,
+}: {
+  articles: Promise<{articles: {nodes: JournalArticle[]}} | null>;
+}) {
+  return (
+    <section className="home-section home-journal">
+      <div className="section-inner">
+        <div className="editorial-heading-row">
+          <div className="editorial-heading">
+            <h2 className="editorial-title">From the Journal</h2>
+          </div>
+          <Link className="editorial-viewall" to="/blogs">
+            View All &rarr;
+          </Link>
+        </div>
+      </div>
+      <Suspense fallback={null}>
+        <Await resolve={articles}>
+          {(data) => {
+            const nodes = data?.articles?.nodes ?? [];
+            if (!nodes.length) return null;
+            return (
+              <DragScroller
+                className="home-journal-rail"
+                ariaLabel="journal articles"
+                showScrollbar
+              >
+                {nodes.map((article, index) => (
+                  <JournalCard
+                    key={article.id}
+                    article={article}
+                    eager={index < 3}
+                  />
+                ))}
+              </DragScroller>
+            );
+          }}
+        </Await>
+      </Suspense>
+    </section>
+  );
+}
+
+function JournalCard({
+  article,
+  eager,
+}: {
+  article: JournalArticle;
+  eager?: boolean;
+}) {
+  const to = `/blogs/${article.blog.handle}/${article.handle}`;
+  const publishedAt = article.publishedAt
+    ? new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(new Date(article.publishedAt))
+    : null;
+  const excerpt = article.excerpt?.trim();
+
+  return (
+    <article className="blog-card home-journal-card">
+      <Link className="blog-card-media" to={to} prefetch="intent" tabIndex={-1}>
+        {article.image && (
+          <img
+            src={article.image.url}
+            alt={article.image.altText || article.title}
+            loading={eager ? 'eager' : 'lazy'}
+            draggable={false}
+          />
+        )}
+      </Link>
+      <div className="blog-card-body">
+        {publishedAt && <time className="blog-card-date">{publishedAt}</time>}
+        <h3 className="blog-card-title">
+          <Link to={to} prefetch="intent">
+            {article.title}
+          </Link>
+        </h3>
+        {excerpt && <p className="blog-card-excerpt">{excerpt}</p>}
+        <Link className="blog-card-more" to={to} prefetch="intent">
+          Read More &rarr;
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+// Latest articles across every blog (the store may have just one blog), for the
+// homepage Journal rail.
+const HOME_ARTICLES_QUERY = `#graphql
+  query HomeArticles($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    articles(first: 8, sortKey: PUBLISHED_AT, reverse: true) {
+      nodes {
+        id
+        title
+        handle
+        excerpt
+        publishedAt
+        blog {
+          handle
+        }
+        image {
+          id
+          altText
+          url
+          width
+          height
         }
       }
     }

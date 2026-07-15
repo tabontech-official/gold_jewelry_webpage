@@ -21,13 +21,32 @@ export function GoogleReviewsSection() {
     document.body.appendChild(script);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const section = document.querySelector('.google-reviews-section');
+    if (!section) return;
+
+    const applyReviewLayout = () => {
+      section.querySelectorAll<HTMLElement>('*').forEach((element) => {
+        const text = element.textContent?.trim();
+        if (text === 'Google Reviews' || text === 'What Our Customers Say') {
+          element.classList.add('google-reviews-hidden-heading');
+        }
+      });
+    };
+
+    applyReviewLayout();
+
+    const observer = new MutationObserver(applyReviewLayout);
+    observer.observe(section, {childList: true, subtree: true});
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="home-section google-reviews-section">
       <div className="section-inner">
-        <div className="home-section-heading">
-          <h2>Google Reviews</h2>
-        </div>
-
         <div className="google-reviews-stage" aria-label="Google reviews grid">
           <div
             className={ELFSIGHT_WIDGET_ID}

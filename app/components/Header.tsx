@@ -314,6 +314,8 @@ function MegaMenuItem({
 }) {
   const fetcher = useFetcher<{products: FeaturedProduct[]}>();
   const [isClosing, setIsClosing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const closeTimer = useRef<number | null>(null);
   const handle = department.to.replace('/collections/', '');
 
   // Load this department's real products (and their images) once, so hovering
@@ -359,17 +361,46 @@ function MegaMenuItem({
 
   function closeMegaMenu() {
     setIsClosing(true);
+    setIsOpen(false);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
   }
 
+  function openMegaMenu() {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setIsClosing(false);
+    setIsOpen(true);
+    loadProducts();
+  }
+
+  function scheduleCloseMegaMenu() {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+      closeTimer.current = null;
+    }, 320);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    };
+  }, []);
+
   return (
     <div
-      className={`mega-menu-item${isClosing ? ' is-closing' : ''}`}
-      onFocus={loadProducts}
-      onMouseEnter={loadProducts}
-      onMouseLeave={() => setIsClosing(false)}
+      className={`mega-menu-item${isOpen ? ' is-open' : ''}${
+        isClosing ? ' is-closing' : ''
+      }`}
+      onBlur={scheduleCloseMegaMenu}
+      onFocus={openMegaMenu}
+      onMouseEnter={openMegaMenu}
+      onMouseLeave={scheduleCloseMegaMenu}
     >
       <NavLink
         className="header-menu-item"

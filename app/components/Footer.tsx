@@ -142,39 +142,38 @@ export function Footer({
                   <h4>Stay Connected</h4>
                   <div className="footer-contact-grid">
                     <div>
-                      <span className="footer-contact-label">Contact</span>
                       <ul>
                         <li>
-                          <a href="tel:+13236888837">+1 (323) 688-8837</a>
+                          <a className="footer-contact-link" href="tel:+13236888837">
+                            <PhoneIcon />
+                            <span>+1 (323) 688-8837</span>
+                          </a>
                         </li>
                         <li>
-                          <a href="mailto:mr10k@goldcustom.com">
-                            mr10k@goldcustom.com
+                          <a
+                            className="footer-contact-link"
+                            href="mailto:mr10k@goldcustom.com"
+                          >
+                            <MailIcon />
+                            <span>mr10k@goldcustom.com</span>
                           </a>
                         </li>
                       </ul>
                     </div>
                     <div>
-                      <span className="footer-contact-label">Location</span>
                       <ul>
                         <li>
                           <a
+                            className="footer-contact-link"
                             href="https://maps.app.goo.gl/252CwsjSZfhSae4B6"
                             target="_blank"
                             rel="noreferrer"
                           >
-                            550 S Hill Street Suite 660, Los Angeles, CA
+                            <MapPinIcon />
+                            <span>550 S Hill St #660, Los Angeles, CA 90013, United States</span>
                           </a>
                         </li>
-                        <li>
-                          <a
-                            href="https://maps.app.goo.gl/252CwsjSZfhSae4B6"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            90013
-                          </a>
-                        </li>
+
                       </ul>
                     </div>
                   </div>
@@ -241,6 +240,51 @@ function TikTokIcon() {
         d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.16a5.76 5.76 0 1 0 4.9 5.63V9.66a7.35 7.35 0 0 0 4.3 1.38V7.95a4.3 4.3 0 0 1-3.24-2.13Z"
         fill="currentColor"
       />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M6.6 4.5 9 4l1.15 4.75-1.42.8a12.9 12.9 0 0 0 5.72 5.72l.8-1.42L20 15l-.5 2.4c-.22 1.06-1.15 1.8-2.23 1.8A12.47 12.47 0 0 1 4.8 6.73c0-1.08.74-2.01 1.8-2.23Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4.5 6.5h15v11h-15v-11Zm.6.6 6.9 5.3 6.9-5.3"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function MapPinIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M12 21s6-5.2 6-10.2A6 6 0 0 0 6 10.8C6 15.8 12 21 12 21Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <circle cx="12" cy="10.8" r="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   );
 }

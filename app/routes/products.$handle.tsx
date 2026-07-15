@@ -30,8 +30,16 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import type {RootLoader} from '~/root';
 
 export const meta: Route.MetaFunction = ({data}) => {
+  const title = data?.product.title || '';
+  const description =
+    data?.product.seo?.description || data?.product.description || '';
+
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: title ? `${title} | Gold Custom` : 'Gold Custom'},
+    {
+      name: 'description',
+      content: description,
+    },
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -164,6 +172,7 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 export default function Product() {
   const {product, recommendedProducts, lengthArticles} =
     useLoaderData<typeof loader>();
+  const root = useRouteLoaderData<any>('root');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -183,6 +192,12 @@ export default function Product() {
 
   const {title, descriptionHtml, vendor} = product;
   const mediaItems = normalizeMedia(product.media?.nodes ?? [], title);
+  const productJsonLd = buildProductJsonLd({
+    product,
+    selectedVariant,
+    mediaItems,
+    baseUrl: getStoreBaseUrl(root),
+  });
   const rawCategory = product.category?.name || product.productType || '';
   const categoryName =
     rawCategory && rawCategory.toLowerCase() !== 'uncategorized'
@@ -228,6 +243,11 @@ export default function Product() {
 
   return (
     <div className="product">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(productJsonLd)}}
+      />
+
       <Breadcrumb items={breadcrumbs} />
 
       <div className="product-layout">
@@ -656,6 +676,62 @@ function normalizeMedia(nodes: any[], title: string): GalleryMedia[] {
       }
     })
     .filter((item): item is GalleryMedia => item !== null);
+}
+
+function buildProductJsonLd({
+  product,
+  selectedVariant,
+  mediaItems,
+  baseUrl,
+}: {
+  product: any;
+  selectedVariant: any;
+  mediaItems: GalleryMedia[];
+  baseUrl: string;
+}) {
+  const images = mediaItems
+    .map((item) => (item.kind === 'image' ? item.image?.url : item.thumbUrl))
+    .filter((url): url is string => Boolean(url));
+  const price = selectedVariant?.price;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    url: `${baseUrl}/products/${product.handle}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'Gold Custom',
+    },
+    description: product.seo?.description || product.description || undefined,
+    image: images.length ? images : undefined,
+    mpn: selectedVariant?.sku || product.handle,
+    sku: selectedVariant?.sku || undefined,
+    offers: price
+      ? {
+          '@type': 'Offer',
+          url: `${baseUrl}/products/${product.handle}`,
+          price: price.amount,
+          priceCurrency: price.currencyCode,
+          availability: selectedVariant?.availableForSale
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          itemCondition: 'https://schema.org/NewCondition',
+        }
+      : undefined,
+  };
+}
+
+function getStoreBaseUrl(root: any) {
+  const primaryDomain = root?.header?.shop?.primaryDomain?.url;
+  if (primaryDomain) return primaryDomain.replace(/\/$/, '');
+
+  const publicDomain = root?.publicStoreDomain;
+  if (!publicDomain) return '';
+
+  return publicDomain.startsWith('http')
+    ? publicDomain.replace(/\/$/, '')
+    : `https://${publicDomain.replace(/\/$/, '')}`;
 }
 
 const PRODUCT_VARIANT_FRAGMENT = `#graphql

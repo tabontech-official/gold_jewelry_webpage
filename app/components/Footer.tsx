@@ -13,6 +13,9 @@ export function Footer({
   header,
   publicStoreDomain,
 }: FooterProps) {
+  const newsletter = useFetcher<{success?: boolean; error?: string}>();
+  const newsletterBusy = newsletter.state !== 'idle';
+
   return (
     <Suspense>
       <Await resolve={footerPromise}>
@@ -20,11 +23,38 @@ export function Footer({
           <footer className="footer">
             <div className="footer-main">
               <div className="footer-left">
-                <div className="footer-brand">{header.shop.name}</div>
-                <p>
-                  Fine jewelry and watches, crafted for every moment that
-                  matters.
-                </p>
+                <div className="footer-brand">Join the Gold Custom Club</div>
+                <p>Subscribe for new drops, private offers, and jewelry care notes.</p>
+                <newsletter.Form
+                  action="/api/subscribe"
+                  className="footer-newsletter"
+                  method="post"
+                >
+                  <label className="visually-hidden" htmlFor="footer-email">
+                    Email address
+                  </label>
+                  <input
+                    id="footer-email"
+                    name="email"
+                    placeholder="Email"
+                    required
+                    type="email"
+                  />
+                  <button disabled={newsletterBusy} type="submit">
+                    {newsletterBusy ? 'Joining' : 'Subscribe'}
+                    <span aria-hidden="true">-&gt;</span>
+                  </button>
+                </newsletter.Form>
+                {newsletter.data?.success ? (
+                  <p className="footer-newsletter-note">You are in. Welcome to the club.</p>
+                ) : (
+                  <p className="footer-newsletter-note">
+                    By joining, you agree to receive occasional Gold Custom emails.
+                  </p>
+                )}
+                {newsletter.data?.error ? (
+                  <p className="footer-newsletter-error">{newsletter.data.error}</p>
+                ) : null}
                 <div className="footer-social">
                   <a
                     href="https://instagram.com"
@@ -150,76 +180,16 @@ export function Footer({
                   </div>
                 </div>
               </div>
-
-              <NewsletterSignup />
             </div>
 
-            <div className="footer-bottom">
-              <div className="footer-bottom-left">
-                <span>&copy; {new Date().getFullYear()} {header.shop.name}. All rights reserved.</span>
-                <nav className="footer-bottom-links">
-                  <Link to="/policies/privacy-policy">Privacy</Link>
-                  <Link to="/policies/terms-of-service">Terms</Link>
-                  <Link to="/accessibility">Accessibility</Link>
-                </nav>
-              </div>
-              <div className="footer-payments">
-                Visa &middot; Mastercard &middot; Amex &middot; PayPal &middot; Apple Pay
-              </div>
+            {/* Giant wordmark, Cadence-style */}
+            <div className="footer-wordmark" aria-hidden="true">
+              {header.shop.name}
             </div>
           </footer>
         )}
       </Await>
     </Suspense>
-  );
-}
-
-// Email signup wired to /api/subscribe. Success reveals the GOLD10 code —
-// the store's active 10%-off, one-use-per-customer discount.
-function NewsletterSignup() {
-  const fetcher = useFetcher<{success?: boolean; error?: string}>();
-
-  return (
-    <div className="footer-newsletter aside">
-      <div className="footer-newsletter-copy">
-        <h3>GET AN EXTRA 10% OFF</h3>
-        <p>when you sign up for email updates</p>
-      </div>
-      {fetcher.data?.success ? (
-        <p className="footer-newsletter-success">
-          You&rsquo;re on the list! Use code <strong>GOLD10</strong> at
-          checkout for 10% off.
-        </p>
-      ) : (
-        <fetcher.Form
-          className="footer-newsletter-form"
-          method="post"
-          action="/api/subscribe"
-        >
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter Email Address"
-            aria-label="Email address"
-            required
-          />
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={fetcher.state !== 'idle'}
-          >
-            {fetcher.state === 'idle' ? 'SUBSCRIBE' : 'SENDING…'}
-          </button>
-        </fetcher.Form>
-      )}
-      {fetcher.data?.error ? (
-        <p className="footer-newsletter-error">{fetcher.data.error}</p>
-      ) : null}
-      <p style={{fontSize: '0.75rem', color: 'var(--color-ink-soft)'}}>
-        By submitting this form, you agree to receive recurring automated
-        promotional and personalized marketing emails.
-      </p>
-    </div>
   );
 }
 
@@ -244,11 +214,9 @@ function InstagramIcon() {
 
 function FacebookIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M14 9h2.5V6H14c-2 0-3.5 1.6-3.5 3.6V12H8v3h2.5v6h3v-6h2.4l.4-3h-2.8v-2.1c0-.6.4-.9 1-.9Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
+        d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.87.24-1.46 1.49-1.46h1.61V4.95c-.28-.04-1.23-.12-2.33-.12-2.3 0-3.87 1.4-3.87 3.98V11H8v3h2.4v7h3.1Z"
         fill="currentColor"
       />
     </svg>
@@ -257,35 +225,21 @@ function FacebookIcon() {
 
 function YoutubeIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect
-        x="2.5"
-        y="5.5"
-        width="19"
-        height="13"
-        rx="3.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M21.6 7.2a2.5 2.5 0 0 0-1.76-1.77C18.28 5 12 5 12 5s-6.28 0-7.84.43A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.76 1.77C5.72 19 12 19 12 19s6.28 0 7.84-.43a2.5 2.5 0 0 0 1.76-1.77A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.2V8.8L15.6 12 10 15.2Z"
+        fill="currentColor"
       />
-      <path d="M10.5 9.5v5l4.5-2.5-4.5-2.5Z" fill="currentColor" />
     </svg>
   );
 }
 
 function TikTokIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M14 3v10.8a2.7 2.7 0 1 1-2.2-2.66"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14 3c.3 2 1.8 3.5 3.8 3.8"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
+        d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.16a5.76 5.76 0 1 0 4.9 5.63V9.66a7.35 7.35 0 0 0 4.3 1.38V7.95a4.3 4.3 0 0 1-3.24-2.13Z"
+        fill="currentColor"
       />
     </svg>
   );
@@ -383,6 +337,6 @@ function activeLinkStyle({
 }) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
+    color: isPending ? 'grey' : undefined,
   };
 }

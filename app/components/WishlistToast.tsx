@@ -16,8 +16,7 @@ export function WishlistToast() {
   const [toast, setToast] = useState<WishlistToastDetail | null>(null);
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-
+    let timeout: ReturnType<typeof setTimeout> | null = null;   
     function onToast(event: Event) {
       const detail = (event as CustomEvent<WishlistToastDetail>).detail;
       setToast(detail);

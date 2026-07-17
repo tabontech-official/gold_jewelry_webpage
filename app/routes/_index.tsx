@@ -10,9 +10,17 @@ import {MarketBar} from '~/components/MarketBar';
 import {CoverflowCarousel} from '~/components/CoverflowCarousel';
 import {DragScroller} from '~/components/DragScroller';
 import {CATEGORIES as CATEGORY_CONFIG} from '~/lib/categories';
+import {FaqAccordion} from '~/components/FaqAccordion';
+import {FAQS_QUERY, parseFaqs} from '~/lib/faqs';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: 'Fine Jewelry & Watches | Gold Jewelry Co.'}];
+};
+
+type HeroContent = {
+  heading: string | null;
+  images: string[];
+  coverImage: string | null;
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -30,7 +38,13 @@ export async function loader(args: Route.LoaderArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}, categoryResponse, trustBadgesResponse, heroResponse] =
+  const [
+    {collections},
+    categoryResponse,
+    trustBadgesResponse,
+    heroResponse,
+    faqsResponse,
+  ] =
     await Promise.all([
       context.storefront.query(FEATURED_COLLECTION_QUERY),
       context.storefront.query(SHOP_BY_CATEGORIES_QUERY),
@@ -39,6 +53,10 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
         return null;
       }),
       context.storefront.query(HERO_CONTENT_QUERY).catch((error: Error) => {
+        console.error(error);
+        return null;
+      }),
+      context.storefront.query(FAQS_QUERY).catch((error: Error) => {
         console.error(error);
         return null;
       }),
@@ -58,23 +76,38 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     ].filter(Boolean),
     trustBadges: parseTrustBadges(trustBadgesResponse),
     hero: parseHeroContent(heroResponse),
+    // pages_faqs is the dedicated homepage FAQ source. Collection pages read
+    // their own linked metafields instead, so no collection FAQ can leak here.
+    faqs: parseFaqs(faqsResponse),
   };
 }
 
 // Pulls the hero images + heading out of the hero_content metaobject.
 // Returns null when the metaobject is missing so the hardcoded hero renders.
-function parseHeroContent(response: any) {
+function parseHeroContent(response: any): HeroContent | null {
   const fields = response?.metaobjects?.nodes?.[0]?.fields;
   if (!Array.isArray(fields)) return null;
 
   const images: string[] = [];
+  const mediaImages: string[] = [];
   let heading: string | null = null;
+  let coverImage: string | null = null;
   for (const field of fields as any[]) {
     const url = field?.reference?.image?.url;
-    if (url) images.push(url);
+    const key = String(field?.key ?? '').replace(/[-_\s]+/g, '').toLowerCase();
+    if (url) mediaImages.push(url);
+    if (url && key.startsWith('heroimage')) images.push(url);
+    // Use any cover-named field when it exists. Its Shopify image reference is
+    // used directly, so changing the uploaded file/name needs no code update.
+    if (url && key.includes('cover')) coverImage = url;
     if (field?.key === 'image_heading' && field?.value) heading = field.value;
   }
-  return {heading, images};
+  // If the field key is renamed later, the final media image in this content
+  // entry is still the cover image (after the hero slideshow images).
+  if (!coverImage && mediaImages.length > images.length) {
+    coverImage = mediaImages[mediaImages.length - 1] ?? null;
+  }
+  return {heading, images, coverImage};
 }
 
 /**
@@ -131,11 +164,12 @@ export default function Homepage() {
         products={data.recommendedProducts}
         genderNewArrivals={data.genderNewArrivals}
       />
-      <DiamondValueSection />
+      <DiamondValueSection image={data.hero?.coverImage ?? null} />
       <FeaturedProducts
         collection={data.featuredCollection}
         bestSelling={data.bestSellingProducts}
       />
+      <FaqAccordion faqs={data.faqs} />
       <HomeJournal articles={data.journalArticles} />
       <PromiseTicker />
     </div>
@@ -145,7 +179,7 @@ export default function Homepage() {
 function Hero({
   content,
 }: {
-  content: {heading: string | null; images: string[]} | null;
+  content: HeroContent | null;
 }) {
   const images = content?.images ?? [];
   // First line of the heading renders plain, remaining lines in gold italic.
@@ -498,13 +532,17 @@ function FeaturedProducts({
   );
 }
 
-function DiamondValueSection() {
+function DiamondValueSection({image}: {image: string | null}) {
+  // This visual is managed in the hero_content metaobject's `cover image`
+  // field. Do not fall back to a gallery/public asset when it is absent.
+  if (!image) return null;
+
   return (
     <section className="home-section diamond-value-section">
       <div className="section-inner">
         <div className="diamond-value-visual">
           <img
-            src="/cover%202.webp"
+            src={image}
             alt="Diamond jewelry craftsmanship and value assurance"
           />
         </div>

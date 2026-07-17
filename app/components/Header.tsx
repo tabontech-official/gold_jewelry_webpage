@@ -17,7 +17,12 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {MEGA_MENU, getColumnItems, toRelativeUrl} from '~/lib/megaMenu';
+import {
+  MEGA_MENU,
+  getColumnItems,
+  hasDepartmentItems,
+  toRelativeUrl,
+} from '~/lib/megaMenu';
 import {
   getEmptyPredictiveSearchResult,
   type PredictiveSearchReturn,
@@ -268,43 +273,25 @@ export function HeaderMenu({
   // Single source of truth for which department's panel is open — one panel
   // can ever render, so a close-delay on one item can't overlap the next.
   const [openId, setOpenId] = useState<string | null>(null);
-  const closeTimer = useRef<number | null>(null);
-
   function openMenu(id: string) {
-    if (closeTimer.current) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
     setOpenId(id);
   }
 
   function closeMenu() {
-    if (closeTimer.current) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
     setOpenId(null);
   }
 
-  // Grace period so the pointer can travel from the nav item into the panel
+  // Leaving this wrapper means the pointer has left both its trigger and panel.
   function scheduleCloseMenu() {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => {
-      setOpenId(null);
-      closeTimer.current = null;
-    }, 320);
+    setOpenId(null);
   }
-
-  useEffect(() => {
-    return () => {
-      if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    };
-  }, []);
 
   if (viewport === 'desktop') {
     return (
       <nav className="header-menu-desktop mega-menu" role="navigation">
-        {MEGA_MENU.map((department) => (
+        {MEGA_MENU.filter((department) =>
+          hasDepartmentItems(header, department),
+        ).map((department) => (
           <MegaMenuItem
             department={department}
             header={header}
@@ -363,21 +350,12 @@ function MegaMenuItem({
   const fetcher = useFetcher<{products: FeaturedProduct[]}>();
   const handle = department.to.replace('/collections/', '');
 
-  // Load this department's real products (and their images) once, so hovering
-  // is instant. Kicked off during browser idle time so it never competes with
-  // the initial page render; hover/focus below is just a fallback trigger.
+  // Load featured products only when the menu is used, keeping the initial
+  // page and route navigation free of background requests for every department.
   function loadProducts() {
     if (fetcher.data || fetcher.state !== 'idle') return;
     fetcher.load(`/api/collection-products?handle=${handle}`);
   }
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const ric = window.requestIdleCallback;
-    if (ric) ric(loadProducts);
-    else window.setTimeout(loadProducts, 200);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const products = fetcher.data?.products ?? [];
   const isLoading = fetcher.state === 'loading' || !fetcher.data;
@@ -541,7 +519,9 @@ function MobileMenu({
       <NavLink end onClick={onNavigate} prefetch="intent" to="/">
         Home
       </NavLink>
-      {MEGA_MENU.map((department) => {
+      {MEGA_MENU.filter((department) =>
+        hasDepartmentItems(header, department),
+      ).map((department) => {
         const isOpen = openDepartment === department.id;
         return (
           <div className="mobile-nav-department" key={department.id}>

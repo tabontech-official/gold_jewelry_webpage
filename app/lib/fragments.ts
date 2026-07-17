@@ -179,6 +179,16 @@ const MENU_FRAGMENT = `#graphql
     title
     type
     url
+    resource {
+      __typename
+      ... on Collection {
+        products(first: 1) {
+          nodes {
+            id
+          }
+        }
+      }
+    }
   }
   fragment ChildMenuItem on MenuItem {
     ...MenuItem

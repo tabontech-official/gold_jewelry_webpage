@@ -12,10 +12,14 @@ export type SortOption = {
 
 export const SORT_OPTIONS: SortOption[] = [
   {label: 'Featured', value: 'featured', sortKey: 'COLLECTION_DEFAULT', reverse: false},
+  {label: 'Most relevant', value: 'relevant', sortKey: 'COLLECTION_DEFAULT', reverse: false},
   {label: 'Best Selling', value: 'best-selling', sortKey: 'BEST_SELLING', reverse: false},
-  {label: 'New Arrivals', value: 'newest', sortKey: 'CREATED', reverse: true},
-  {label: 'Price: Low to High', value: 'price-asc', sortKey: 'PRICE', reverse: false},
-  {label: 'Price: High to Low', value: 'price-desc', sortKey: 'PRICE', reverse: true},
+  {label: 'Alphabetically, A–Z', value: 'title-asc', sortKey: 'TITLE', reverse: false},
+  {label: 'Alphabetically, Z–A', value: 'title-desc', sortKey: 'TITLE', reverse: true},
+  {label: 'Price, low to high', value: 'price-asc', sortKey: 'PRICE', reverse: false},
+  {label: 'Price, high to low', value: 'price-desc', sortKey: 'PRICE', reverse: true},
+  {label: 'Date, old to new', value: 'date-asc', sortKey: 'CREATED', reverse: false},
+  {label: 'Date, new to old', value: 'date-desc', sortKey: 'CREATED', reverse: true},
 ];
 
 export function getSortFromParam(sort?: string | null): SortOption {

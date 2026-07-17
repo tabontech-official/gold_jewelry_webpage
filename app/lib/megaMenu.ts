@@ -91,7 +91,22 @@ export function getColumnItems(
   header: HeaderQuery,
   column: MegaMenuColumn,
 ): NonNullable<HeaderQuery['ringsPrimary']>['items'] {
-  return column.menuKeys.flatMap((key) => header[key]?.items ?? []);
+  return column.menuKeys
+    .flatMap((key) => header[key]?.items ?? [])
+    .filter((item) => {
+      // Keep non-collection links (such as informational pages), but omit a
+      // collection whenever Shopify reports that it has no products.
+      if (item.resource?.__typename !== 'Collection') return true;
+      return item.resource.products.nodes.length > 0;
+    });
+}
+
+/** Whether a department still has at least one product-backed submenu link. */
+export function hasDepartmentItems(
+  header: HeaderQuery,
+  department: MegaMenuDepartment,
+): boolean {
+  return department.columns.some((column) => getColumnItems(header, column).length > 0);
 }
 
 /** Finds the mega-menu department whose `to` matches a given collection path. */

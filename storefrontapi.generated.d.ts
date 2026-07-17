@@ -3,6 +3,21 @@
 /* eslint-disable */
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
 
+export type FaqsQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type FaqsQuery = {
+  metaobjects: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'handle'> & {
+        fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
+      }
+    >;
+  };
+};
+
 export type MoneyFragment = Pick<
   StorefrontAPI.MoneyV2,
   'currencyCode' | 'amount'
@@ -270,12 +285,42 @@ export type CartApiQueryFragment = Pick<
 export type MenuItemFragment = Pick<
   StorefrontAPI.MenuItem,
   'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
->;
+> & {
+  resource?: StorefrontAPI.Maybe<
+    | {
+        __typename:
+          | 'Article'
+          | 'Blog'
+          | 'Metaobject'
+          | 'Page'
+          | 'Product'
+          | 'ShopPolicy';
+      }
+    | ({__typename: 'Collection'} & {
+        products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+      })
+  >;
+};
 
 export type ChildMenuItemFragment = Pick<
   StorefrontAPI.MenuItem,
   'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
->;
+> & {
+  resource?: StorefrontAPI.Maybe<
+    | {
+        __typename:
+          | 'Article'
+          | 'Blog'
+          | 'Metaobject'
+          | 'Page'
+          | 'Product'
+          | 'ShopPolicy';
+      }
+    | ({__typename: 'Collection'} & {
+        products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+      })
+  >;
+};
 
 export type ParentMenuItemFragment = Pick<
   StorefrontAPI.MenuItem,
@@ -285,7 +330,36 @@ export type ParentMenuItemFragment = Pick<
     Pick<
       StorefrontAPI.MenuItem,
       'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-    >
+    > & {
+      resource?: StorefrontAPI.Maybe<
+        | {
+            __typename:
+              | 'Article'
+              | 'Blog'
+              | 'Metaobject'
+              | 'Page'
+              | 'Product'
+              | 'ShopPolicy';
+          }
+        | ({__typename: 'Collection'} & {
+            products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+          })
+      >;
+    }
+  >;
+  resource?: StorefrontAPI.Maybe<
+    | {
+        __typename:
+          | 'Article'
+          | 'Blog'
+          | 'Metaobject'
+          | 'Page'
+          | 'Product'
+          | 'ShopPolicy';
+      }
+    | ({__typename: 'Collection'} & {
+        products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+      })
   >;
 };
 
@@ -299,7 +373,36 @@ export type MenuFragment = Pick<StorefrontAPI.Menu, 'id'> & {
         Pick<
           StorefrontAPI.MenuItem,
           'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-        >
+        > & {
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
+          >;
+        }
+      >;
+      resource?: StorefrontAPI.Maybe<
+        | {
+            __typename:
+              | 'Article'
+              | 'Blog'
+              | 'Metaobject'
+              | 'Page'
+              | 'Product'
+              | 'ShopPolicy';
+          }
+        | ({__typename: 'Collection'} & {
+            products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+          })
       >;
     }
   >;
@@ -343,7 +446,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -360,7 +492,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -377,7 +538,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -394,7 +584,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -411,7 +630,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -428,7 +676,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -445,7 +722,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -462,7 +768,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -479,7 +814,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -496,7 +860,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -513,7 +906,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -530,7 +952,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -547,7 +998,36 @@ export type HeaderQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -573,7 +1053,36 @@ export type FooterQuery = {
             Pick<
               StorefrontAPI.MenuItem,
               'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
-            >
+            > & {
+              resource?: StorefrontAPI.Maybe<
+                | {
+                    __typename:
+                      | 'Article'
+                      | 'Blog'
+                      | 'Metaobject'
+                      | 'Page'
+                      | 'Product'
+                      | 'ShopPolicy';
+                  }
+                | ({__typename: 'Collection'} & {
+                    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+                  })
+              >;
+            }
+          >;
+          resource?: StorefrontAPI.Maybe<
+            | {
+                __typename:
+                  | 'Article'
+                  | 'Blog'
+                  | 'Metaobject'
+                  | 'Page'
+                  | 'Product'
+                  | 'ShopPolicy';
+              }
+            | ({__typename: 'Collection'} & {
+                products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+              })
           >;
         }
       >;
@@ -1213,6 +1722,41 @@ export type CollectionQuery = {
       StorefrontAPI.Collection,
       'id' | 'handle' | 'title' | 'description'
     > & {
+      collectionFaqs?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metaobject, 'handle'> & {
+            fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
+          }
+        >;
+      }>;
+      collectionCenterImages?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metaobject, 'handle'> & {
+            fields: Array<
+              Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+                reference?: StorefrontAPI.Maybe<
+                  | Pick<StorefrontAPI.GenericFile, 'url'>
+                  | {
+                      image?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                      >;
+                    }
+                >;
+                references?: StorefrontAPI.Maybe<{
+                  nodes: Array<
+                    | Pick<StorefrontAPI.GenericFile, 'url'>
+                    | {
+                        image?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                        >;
+                      }
+                  >;
+                }>;
+              }
+            >;
+          }
+        >;
+      }>;
       products: {
         filters: Array<
           Pick<StorefrontAPI.Filter, 'id' | 'label' | 'type'> & {
@@ -1279,40 +1823,6 @@ export type CollectionQuery = {
       };
     }
   >;
-};
-
-export type CollectionCoverPhotosQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type CollectionCoverPhotosQuery = {
-  metaobjects: {
-    nodes: Array<{
-      fields: Array<
-        Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
-          reference?: StorefrontAPI.Maybe<
-            | Pick<StorefrontAPI.GenericFile, 'url'>
-            | {
-                image?: StorefrontAPI.Maybe<
-                  Pick<StorefrontAPI.Image, 'url' | 'altText'>
-                >;
-              }
-          >;
-          references?: StorefrontAPI.Maybe<{
-            nodes: Array<
-              | Pick<StorefrontAPI.GenericFile, 'url'>
-              | {
-                  image?: StorefrontAPI.Maybe<
-                    Pick<StorefrontAPI.Image, 'url' | 'altText'>
-                  >;
-                }
-            >;
-          }>;
-        }
-      >;
-    }>;
-  };
 };
 
 export type CollectionFragment = Pick<
@@ -2084,11 +2594,15 @@ export type WishlistProductQuery = {
 };
 
 interface GeneratedQueryTypes {
-  '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $headerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    menu(handle: $headerMenuHandle) {\n      ...Menu\n    }\n    ringsPrimary: menu(handle: "rings-1") {\n      ...Menu\n    }\n    ringsSecondary: menu(handle: "rings-2") {\n      ...Menu\n    }\n    chainsGroup1: menu(handle: "chains-copy-copy-1") {\n      ...Menu\n    }\n    chainsGroup2: menu(handle: "chains-copy-copy") {\n      ...Menu\n    }\n    chainsGroup3: menu(handle: "chains-copy") {\n      ...Menu\n    }\n    braceletsMenu: menu(handle: "bracelets") {\n      ...Menu\n    }\n    earringsMenu: menu(handle: "earrings") {\n      ...Menu\n    }\n    pendantsMenu: menu(handle: "pendants") {\n      ...Menu\n    }\n    chainWithPendantMenu: menu(handle: "chain-with-pendant") {\n      ...Menu\n    }\n    necklacesMenu: menu(handle: "necklaces") {\n      ...Menu\n    }\n    diamondMenu: menu(handle: "diamond") {\n      ...Menu\n    }\n    engagementRingsMenu: menu(handle: "engagement-rings") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
+  '#graphql\n  query Faqs($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    metaobjects(type: "pages_faqs", first: 100) {\n      nodes {\n        handle\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+    return: FaqsQuery;
+    variables: FaqsQueryVariables;
+  };
+  '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $headerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    menu(handle: $headerMenuHandle) {\n      ...Menu\n    }\n    ringsPrimary: menu(handle: "rings-1") {\n      ...Menu\n    }\n    ringsSecondary: menu(handle: "rings-2") {\n      ...Menu\n    }\n    chainsGroup1: menu(handle: "chains-copy-copy-1") {\n      ...Menu\n    }\n    chainsGroup2: menu(handle: "chains-copy-copy") {\n      ...Menu\n    }\n    chainsGroup3: menu(handle: "chains-copy") {\n      ...Menu\n    }\n    braceletsMenu: menu(handle: "bracelets") {\n      ...Menu\n    }\n    earringsMenu: menu(handle: "earrings") {\n      ...Menu\n    }\n    pendantsMenu: menu(handle: "pendants") {\n      ...Menu\n    }\n    chainWithPendantMenu: menu(handle: "chain-with-pendant") {\n      ...Menu\n    }\n    necklacesMenu: menu(handle: "necklaces") {\n      ...Menu\n    }\n    diamondMenu: menu(handle: "diamond") {\n      ...Menu\n    }\n    engagementRingsMenu: menu(handle: "engagement-rings") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n    resource {\n      __typename\n      ... on Collection {\n        products(first: 1) {\n          nodes {\n            id\n          }\n        }\n      }\n    }\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
-  '#graphql\n  query Footer(\n    $country: CountryCode\n    $footerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    menu(handle: $footerMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
+  '#graphql\n  query Footer(\n    $country: CountryCode\n    $footerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    menu(handle: $footerMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n    resource {\n      __typename\n      ... on Collection {\n        products(first: 1) {\n          nodes {\n            id\n          }\n        }\n      }\n    }\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: FooterQuery;
     variables: FooterQueryVariables;
   };
@@ -2148,13 +2662,9 @@ interface GeneratedQueryTypes {
     return: BlogsQuery;
     variables: BlogsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters,\n        sortKey: $sortKey,\n        reverse: $reverse\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n      bestSelling: products(first: 8, sortKey: BEST_SELLING) {\n        nodes {\n          ...ProductItem\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    selectedOrFirstAvailableVariant {\n      id\n      availableForSale\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      collectionFaqs: metafield(namespace: "custom", key: "collections_faqs") {\n        reference {\n          ... on Metaobject {\n            handle\n            fields {\n              key\n              value\n            }\n          }\n        }\n      }\n      collectionCenterImages: metafield(namespace: "custom", key: "collection_center_images") {\n        reference {\n          ... on Metaobject {\n            handle\n            fields {\n              key\n              value\n              reference {\n                ... on MediaImage {\n                  image {\n                    url\n                    altText\n                  }\n                }\n                ... on GenericFile {\n                  url\n                }\n              }\n              references(first: 20) {\n                nodes {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                  ... on GenericFile {\n                    url\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters,\n        sortKey: $sortKey,\n        reverse: $reverse\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n      bestSelling: products(first: 8, sortKey: BEST_SELLING) {\n        nodes {\n          ...ProductItem\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
-  };
-  '#graphql\n  query CollectionCoverPhotos($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    metaobjects(type: "cover_photos", first: 20) {\n      nodes {\n        fields {\n          key\n          value\n          reference {\n            ... on MediaImage {\n              image {\n                url\n                altText\n              }\n            }\n            ... on GenericFile {\n              url\n            }\n          }\n          references(first: 20) {\n            nodes {\n              ... on MediaImage {\n                image {\n                  url\n                  altText\n                }\n              }\n              ... on GenericFile {\n                url\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
-    return: CollectionCoverPhotosQuery;
-    variables: CollectionCoverPhotosQueryVariables;
   };
   '#graphql\n  fragment Collection on Collection {\n    id\n    title\n    handle\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    products(first: 1) {\n      nodes {\n        id\n      }\n    }\n  }\n  query StoreCollections(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collections(\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      nodes {\n        ...Collection\n      }\n      pageInfo {\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n': {
     return: StoreCollectionsQuery;

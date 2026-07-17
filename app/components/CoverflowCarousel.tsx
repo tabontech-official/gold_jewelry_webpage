@@ -269,7 +269,10 @@ export function CoverflowCarousel({items}: {items: CoverflowItem[]}) {
               </h3>
               <div className="coverflow-card-links">
                 <Link
+                  prefetch="render"
                   to={`/collections/${item.handle}`}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onPointerUp={(event) => event.stopPropagation()}
                   onClick={(event) => event.stopPropagation()}
                 >
                   Shop Now

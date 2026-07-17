@@ -15,6 +15,8 @@ import {
   toRelativeUrl,
 } from '~/lib/megaMenu';
 import type {RootLoader} from '~/root';
+import {FaqAccordion} from '~/components/FaqAccordion';
+import {parseFaqMetaobject} from '~/lib/faqs';
 
 type CollectionCoverPhoto = {
   image: string;
@@ -127,7 +129,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw redirect('/collections');
   }
 
-  const [{collection}, coverPhotosResponse] = await Promise.all([
+  const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {
         handle,
@@ -138,11 +140,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
       },
       // Add other queries here, so that they are loaded in parallel
     }),
-    storefront
-      .query(COLLECTION_COVER_PHOTOS_QUERY, {
-        cache: storefront.CacheLong(),
-      })
-      .catch(() => null),
   ]);
 
   if (!collection) {
@@ -156,7 +153,20 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   return {
     collection,
-    coverPhotos: getCoverPhotos(coverPhotosResponse),
+    // These metaobjects are assigned in Shopify on each individual collection.
+    // Never search or fall back to general site-wide FAQ/cover data here.
+    coverPhotos: getCoverPhotos(
+      {
+        metaobjects: {
+          nodes: collection.collectionCenterImages?.reference
+            ? [collection.collectionCenterImages.reference]
+            : [],
+        },
+      },
+      handle,
+      false,
+    ),
+    faqs: parseFaqMetaobject(collection.collectionFaqs?.reference),
   };
 }
 
@@ -169,17 +179,37 @@ function loadDeferredData({context}: Route.LoaderArgs) {
   return {};
 }
 
-function getCoverPhotos(response: any): CollectionCoverPhoto[] {
+function getCoverPhotos(
+  response: any,
+  collectionHandle: string,
+  requireSectionMatch = true,
+): CollectionCoverPhoto[] {
   const nodes = response?.metaobjects?.nodes as any[] | undefined;
   if (!Array.isArray(nodes)) return [];
+  const normalizedHandle = collectionHandle.toLowerCase();
   const seenImages = new Set<string>();
   const photos: CollectionCoverPhoto[] = [];
 
-  nodes.forEach((node) => {
+  nodes.forEach((rawNode) => {
+    const node = rawNode as any;
+    const nodeHandle = String(node?.handle ?? '').toLowerCase();
     const metaobject = node as {fields?: CoverPhotoField[]};
     const fields: CoverPhotoField[] = Array.isArray(metaobject.fields)
       ? metaobject.fields
       : [];
+    const belongsToCollection =
+      nodeHandle === normalizedHandle ||
+      nodeHandle.startsWith(`${normalizedHandle}-`) ||
+      nodeHandle.endsWith(`-${normalizedHandle}`) ||
+      fields.some((field) => {
+        const key = String(field?.key ?? '').toLowerCase().replace(/[_\s]+/g, '-');
+        const value = String(field?.value ?? '').toLowerCase().replace(/[_\s]+/g, '-');
+        return (
+          ['section', 'section-handle', 'collection', 'collection-handle', 'category', 'category-handle', 'handle'].includes(key) &&
+          value === normalizedHandle
+        );
+      });
+    if (requireSectionMatch && !belongsToCollection) return;
     const altField = fields.find((field) => {
       const key = String(field?.key ?? '').toLowerCase();
       return key === 'alt' || key === 'alt_text' || key === 'title';
@@ -226,7 +256,7 @@ function getCoverPhotos(response: any): CollectionCoverPhoto[] {
 }
 
 export default function Collection() {
-  const {collection, coverPhotos} = useLoaderData<typeof loader>();
+  const {collection, coverPhotos, faqs} = useLoaderData<typeof loader>();
   const rootData = useRouteLoaderData<RootLoader>('root');
   const parentCrumb = getCollectionParentCrumb({
     handle: collection.handle,
@@ -342,6 +372,23 @@ export default function Collection() {
                     </>
                   )}
 
+                  {isLoading && (
+                    <div
+                      className="products-grid collection-load-more-skeleton"
+                      aria-label="Loading more products"
+                    >
+                      {Array.from({length: 4}).map((_, index) => (
+                        <article className="product-item product-skeleton" key={index}>
+                          <div className="product-image-skeleton" />
+                          <div className="product-card-body">
+                            <div className="product-text-skeleton is-title" />
+                            <div className="product-text-skeleton is-price" />
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="load-more-bar">
                     <span className="load-more-count">
                       {nodes.length} pieces shown
@@ -365,6 +412,8 @@ export default function Collection() {
           </div>
         </div>
       </section>
+
+      <FaqAccordion faqs={faqs} />
 
       <Analytics.CollectionView
         data={{
@@ -408,7 +457,6 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     }
   }
 ` as const;
-
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
@@ -429,6 +477,52 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      collectionFaqs: metafield(namespace: "custom", key: "collections_faqs") {
+        reference {
+          ... on Metaobject {
+            handle
+            fields {
+              key
+              value
+            }
+          }
+        }
+      }
+      collectionCenterImages: metafield(namespace: "custom", key: "collection_center_images") {
+        reference {
+          ... on Metaobject {
+            handle
+            fields {
+              key
+              value
+              reference {
+                ... on MediaImage {
+                  image {
+                    url
+                    altText
+                  }
+                }
+                ... on GenericFile {
+                  url
+                }
+              }
+              references(first: 20) {
+                nodes {
+                  ... on MediaImage {
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                  ... on GenericFile {
+                    url
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       products(
         first: $first,
         last: $last,
@@ -462,44 +556,6 @@ const COLLECTION_QUERY = `#graphql
       bestSelling: products(first: 8, sortKey: BEST_SELLING) {
         nodes {
           ...ProductItem
-        }
-      }
-    }
-  }
-` as const;
-
-const COLLECTION_COVER_PHOTOS_QUERY = `#graphql
-  query CollectionCoverPhotos($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    metaobjects(type: "cover_photos", first: 20) {
-      nodes {
-        fields {
-          key
-          value
-          reference {
-            ... on MediaImage {
-              image {
-                url
-                altText
-              }
-            }
-            ... on GenericFile {
-              url
-            }
-          }
-          references(first: 20) {
-            nodes {
-              ... on MediaImage {
-                image {
-                  url
-                  altText
-                }
-              }
-              ... on GenericFile {
-                url
-              }
-            }
-          }
         }
       }
     }

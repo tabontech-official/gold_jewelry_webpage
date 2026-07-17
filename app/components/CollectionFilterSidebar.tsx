@@ -120,9 +120,16 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
     <>
       {/* Mobile-only toolbar */}
       <div className="collection-toolbar">
-        <button type="button" onClick={() => setDrawer('filters')}>
+        <button
+          type="button"
+          className="collection-filter-trigger"
+          onClick={() => setDrawer('filters')}
+        >
           <FilterIcon />
-          <span>Filter</span>
+          <span>Filters</span>
+          {activeFilterParams.length > 0 && (
+            <span className="collection-filter-count">{activeFilterParams.length}</span>
+          )}
         </button>
         {activeFilterParams.length > 0 && (
           <Link
@@ -133,6 +140,10 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
             Clear all
           </Link>
         )}
+        <span className="collection-sort-heading">
+          <SortIcon />
+          <span>Sort</span>
+        </span>
         <div className="collection-sort-select">
           <button
             aria-expanded={sortOpen}
@@ -141,8 +152,12 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
             onClick={() => setSortOpen((open) => !open)}
             type="button"
           >
-            <span>Sort: {activeSort.label}</span>
-            <span aria-hidden="true">⌄</span>
+            <span className="collection-sort-label">
+              <SortIcon />
+              <span>Sort</span>
+            </span>
+            <span className="collection-sort-value">{activeSort.label}</span>
+            <span aria-hidden="true">▾</span>
           </button>
           {sortOpen && (
             <div className="collection-sort-popover" role="listbox">
@@ -378,6 +393,14 @@ function FilterIcon() {
         <circle cx="15" cy="12" r="2.3" />
         <circle cx="8" cy="18" r="2.3" />
       </g>
+    </svg>
+  );
+}
+
+function SortIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 4v15m0 0-3-3m3 3 3-3M17 20V5m0 0-3 3m3-3 3 3" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
     </svg>
   );
 }

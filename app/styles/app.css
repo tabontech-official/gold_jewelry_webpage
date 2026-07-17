@@ -1712,7 +1712,21 @@ button.reset:hover:not(:has(> *)) {
 
 @media (max-width: 40em) {
   .footer-main {
-    grid-template-columns: 1fr;
+    column-gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 1.8rem;
+  }
+
+  .footer-left,
+  .footer-contact-col {
+    grid-column: 1 / -1;
+  }
+
+  /* Shop and Customers share one compact row; contact information stays
+     full width below rather than making the footer excessively tall. */
+  .footer-mid .footer-col:nth-child(1),
+  .footer-mid .footer-col:nth-child(2) {
+    grid-column: auto;
   }
 
   .footer-bottom-left {
@@ -1730,7 +1744,13 @@ button.reset:hover:not(:has(> *)) {
   }
 
   .footer-wordmark {
-    font-size: clamp(3.2rem, 18vw, 7rem);
+    font-size: clamp(2.95rem, 16.56vw, 6.45rem);
+    letter-spacing: -0.075em;
+    word-spacing: -0.08em;
+    overflow: hidden;
+    padding: 0 1.5rem;
+    transform: translateY(0.18em) scaleX(1.01);
+    transform-origin: bottom center;
   }
 }
 

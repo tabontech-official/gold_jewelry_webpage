@@ -1,10 +1,9 @@
-import {Link} from 'react-router';
+import {PolicyDocument} from '~/components/PolicyDocument';
 
 export default function TermsOfService() {
   return (
-    <div className="section-inner home-section">
-      <div className="page">
-        <h1>Terms of Service</h1>
+    <PolicyDocument title="Terms of Service">
+      <section>
         <p>
           We provide services to you subject to the notices, terms, and
           conditions set forth in this agreement. Before proceeding, please read
@@ -12,7 +11,8 @@ export default function TermsOfService() {
           Site indicates your agreement to all the terms and conditions in this
           agreement.
         </p>
-
+      </section>
+      <section>
         <h2>Prohibited content</h2>
         <p>
           You shall not upload, distribute, or otherwise publish through this
@@ -20,25 +20,22 @@ export default function TermsOfService() {
           defamatory, obscene, indecent, pornographic, discriminatory, or
           violates intellectual property rights.
         </p>
-
+      </section>
+      <section>
         <h2>Account security and age</h2>
         <p>
           You are responsible for maintaining the security of your account and
           for all activities that occur under your account. By accepting these
           terms, you certify that you are 18 years of age or older.
         </p>
-
+      </section>
+      <section>
         <h2>License</h2>
         <p>
-          We grant you a limited, revocable, non-transferable, and
-          non-exclusive license to access and use the Site for personal,
-          non-commercial use.
+          We grant you a limited, revocable, non-transferable, and non-exclusive
+          license to access and use the Site for personal, non-commercial use.
         </p>
-
-        <p>
-          <Link to="/">Back to home</Link>
-        </p>
-      </div>
-    </div>
+      </section>
+    </PolicyDocument>
   );
 }

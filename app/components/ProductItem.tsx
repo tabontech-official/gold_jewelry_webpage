@@ -5,6 +5,8 @@ import type {
   RecommendedProductFragment,
 } from 'storefrontapi.generated';
 import {useWishlistToggle} from '~/hooks/useWishlistToggle';
+import {AddToCartButton} from '~/components/AddToCartButton';
+import {useAside} from '~/components/Aside';
 
 function HeartIcon() {
   return (
@@ -24,11 +26,9 @@ export function ProductItem({
   loading,
   className,
   collectionContext,
+  showQuickAdd = false,
 }: {
-  product:
-    | ProductItemFragment
-    | RecommendedProductFragment
-    | any;
+  product: ProductItemFragment | RecommendedProductFragment | any;
   loading?: 'eager' | 'lazy';
   className?: string;
   collectionContext?: {
@@ -37,6 +37,8 @@ export function ProductItem({
     subcategoryLabel?: string;
     subcategoryHandle?: string;
   };
+  /** Wishlist cards can add their first available variant without leaving the page. */
+  showQuickAdd?: boolean;
 }) {
   const productUrl = buildProductUrl(product.handle, collectionContext);
   const image = product.featuredImage;
@@ -60,7 +62,9 @@ export function ProductItem({
         </Link>
 
         {/* Heart sits top-right over the image, always visible. */}
-        <WishlistButton handle={product.handle} />
+        <div className="product-wishlist-control">
+          <WishlistButton handle={product.handle} />
+        </div>
       </div>
 
       <div className="product-card-body">
@@ -71,7 +75,32 @@ export function ProductItem({
           <Money data={product.priceRange.minVariantPrice} />
         </div>
       </div>
+      {showQuickAdd && <WishlistQuickAdd product={product} />}
     </article>
+  );
+}
+
+function WishlistQuickAdd({product}: {product: any}) {
+  const {open} = useAside();
+  const variant = product.selectedOrFirstAvailableVariant;
+
+  if (!variant) return null;
+
+  return (
+    <AddToCartButton
+      className="wishlist-quick-add"
+      disabled={!variant.availableForSale}
+      lines={[
+        {
+          merchandiseId: variant.id,
+          quantity: 1,
+          selectedVariant: variant,
+        },
+      ]}
+      onClick={() => open('cart')}
+    >
+      {variant.availableForSale ? 'Add to bag →' : 'Sold out'}
+    </AddToCartButton>
   );
 }
 

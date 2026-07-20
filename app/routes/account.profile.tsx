@@ -87,8 +87,11 @@ export default function AccountProfile() {
 
   return (
     <div className="account-profile">
-      <h2>My profile</h2>
-      <br />
+      <div className="account-page-intro">
+        <p className="account-kicker">Personal details</p>
+        <h2>My profile</h2>
+        <p>Keep your account details up to date.</p>
+      </div>
       <Form method="PUT">
         <legend>Personal information</legend>
         <fieldset>

@@ -1,9 +1,7 @@
-import {
-  useLoaderData,
-} from 'react-router';
+import {useLoaderData} from 'react-router';
 import type {Route} from './+types/policies.$handle';
-import {Breadcrumb} from '~/components/Breadcrumb';
 import {type Shop} from '@shopify/hydrogen/storefront-api-types';
+import {PolicyDocument} from '~/components/PolicyDocument';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -48,17 +46,9 @@ export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy">
-      <Breadcrumb
-        items={[
-          {label: 'Home', to: '/'},
-          {label: 'Policies', to: '/policies'},
-          {label: policy.title},
-        ]}
-      />
-      <h1>{policy.title}</h1>
+    <PolicyDocument title={policy.title}>
       <div dangerouslySetInnerHTML={{__html: policy.body}} />
-    </div>
+    </PolicyDocument>
   );
 }
 

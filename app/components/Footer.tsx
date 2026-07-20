@@ -24,7 +24,10 @@ export function Footer({
             <div className="footer-main">
               <div className="footer-left">
                 <div className="footer-brand">Join the Gold Custom Club</div>
-                <p>Subscribe for new drops, private offers, and jewelry care notes.</p>
+                <p>
+                  Subscribe for new drops, private offers, and jewelry care
+                  notes.
+                </p>
                 <newsletter.Form
                   action="/api/subscribe"
                   className="footer-newsletter"
@@ -46,14 +49,19 @@ export function Footer({
                   </button>
                 </newsletter.Form>
                 {newsletter.data?.success ? (
-                  <p className="footer-newsletter-note">You are in. Welcome to the club.</p>
+                  <p className="footer-newsletter-note">
+                    You are in. Welcome to the club.
+                  </p>
                 ) : (
                   <p className="footer-newsletter-note">
-                    By joining, you agree to receive occasional Gold Custom emails.
+                    By joining, you agree to receive occasional Gold Custom
+                    emails.
                   </p>
                 )}
                 {newsletter.data?.error ? (
-                  <p className="footer-newsletter-error">{newsletter.data.error}</p>
+                  <p className="footer-newsletter-error">
+                    {newsletter.data.error}
+                  </p>
                 ) : null}
                 <div className="footer-social">
                   <a
@@ -97,7 +105,9 @@ export function Footer({
                   <h4>Shop</h4>
                   <ul>
                     <li>
-                      <Link to="/collections/diamond">Diamond & Engagement</Link>
+                      <Link to="/collections/diamond">
+                        Diamond & Engagement
+                      </Link>
                     </li>
                     <li>
                       <Link to="/collections/chains">Chains</Link>
@@ -124,10 +134,7 @@ export function Footer({
                       <Link to="/search">Search</Link>
                     </li>
                     <li>
-                      <Link to="/policies/privacy-policy">Your Privacy Choices</Link>
-                    </li>
-                    <li>
-                      <Link to="/faq">FAQ</Link>
+                      <Link to="/policies">Policies</Link>
                     </li>
                     <li>
                       <Link to="/contact">Contact Us</Link>
@@ -144,7 +151,10 @@ export function Footer({
                     <div>
                       <ul>
                         <li>
-                          <a className="footer-contact-link" href="tel:+13236888837">
+                          <a
+                            className="footer-contact-link"
+                            href="tel:+13236888837"
+                          >
                             <PhoneIcon />
                             <span>+1 (323) 688-8837</span>
                           </a>
@@ -170,10 +180,12 @@ export function Footer({
                             rel="noreferrer"
                           >
                             <MapPinIcon />
-                            <span>550 S Hill St #660, Los Angeles, CA 90013, United States</span>
+                            <span>
+                              550 S Hill St #660, Los Angeles, CA 90013, United
+                              States
+                            </span>
                           </a>
                         </li>
-
                       </ul>
                     </div>
                   </div>
@@ -205,7 +217,14 @@ function InstagramIcon() {
         strokeWidth="1.6"
         fill="none"
       />
-      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.6" fill="none" />
+      <circle
+        cx="12"
+        cy="12"
+        r="4.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+      />
       <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
     </svg>
   );
@@ -284,7 +303,14 @@ function MapPinIcon() {
         strokeLinejoin="round"
         strokeWidth="1.7"
       />
-      <circle cx="12" cy="10.8" r="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <circle
+        cx="12"
+        cy="10.8"
+        r="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
     </svg>
   );
 }

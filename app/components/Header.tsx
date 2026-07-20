@@ -140,7 +140,8 @@ function HeaderSearchBar() {
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const {items, total} = fetcher.data?.result ?? getEmptyPredictiveSearchResult();
+  const {items, total} =
+    fetcher.data?.result ?? getEmptyPredictiveSearchResult();
   const showResults = isOpen && term.length > 0;
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -159,10 +160,7 @@ function HeaderSearchBar() {
 
   return (
     <div className="header-search">
-      <form
-        onSubmit={(event) => event.preventDefault()}
-        role="search"
-      >
+      <form onSubmit={(event) => event.preventDefault()} role="search">
         <input
           aria-label="Search"
           autoComplete="off"
@@ -384,7 +382,9 @@ function MegaMenuItem({
   // columns even when their current item count is small, as those departments
   // have enough breadth to warrant the denser scanning pattern.
   const linkColumnCount =
-    department.id === 'rings' || department.id === 'chains' || menuItems.length > 6
+    department.id === 'rings' ||
+    department.id === 'chains' ||
+    menuItems.length > 6
       ? 2
       : 1;
   // The featured pane has room for three consistently sized cards. Products
@@ -427,7 +427,9 @@ function MegaMenuItem({
           <div className="mega-menu-links-panel">
             <ul
               className="mega-menu-link-list"
-              style={{'--mega-link-columns': linkColumnCount} as React.CSSProperties}
+              style={
+                {'--mega-link-columns': linkColumnCount} as React.CSSProperties
+              }
             >
               {menuItems.map((item) => (
                 <li key={item.id}>
@@ -463,38 +465,42 @@ function MegaMenuItem({
             >
               {featuredProducts.length > 0
                 ? featuredProducts.map((product) => (
-                  <Link
-                    className="mega-menu-card"
-                    key={product.id}
-                    onClick={closeMegaMenu}
-                    prefetch="intent"
-                    to={`/products/${product.handle}`}
-                  >
-                    {product.featuredImage ? (
-                      <Image
-                        className="mega-menu-card-img"
-                        data={product.featuredImage}
-                        width={170}
-                        height={213}
-                        sizes="170px"
-                      />
-                    ) : (
-                      <span className="mega-menu-card-img" />
-                    )}
-                    <span className="mega-menu-card-title">{product.title}</span>
-                    {product.priceRange?.minVariantPrice && (
-                      <span className="mega-menu-card-price">
-                        <Money data={product.priceRange.minVariantPrice as any} />
+                    <Link
+                      className="mega-menu-card"
+                      key={product.id}
+                      onClick={closeMegaMenu}
+                      prefetch="intent"
+                      to={`/products/${product.handle}`}
+                    >
+                      {product.featuredImage ? (
+                        <Image
+                          className="mega-menu-card-img"
+                          data={product.featuredImage}
+                          width={170}
+                          height={213}
+                          sizes="170px"
+                        />
+                      ) : (
+                        <span className="mega-menu-card-img" />
+                      )}
+                      <span className="mega-menu-card-title">
+                        {product.title}
                       </span>
-                    )}
-                  </Link>
-                ))
+                      {product.priceRange?.minVariantPrice && (
+                        <span className="mega-menu-card-price">
+                          <Money
+                            data={product.priceRange.minVariantPrice as any}
+                          />
+                        </span>
+                      )}
+                    </Link>
+                  ))
                 : isLoading &&
-                Array.from({length: featuredProductCount}).map((_, index) => (
-                  <span className="mega-menu-card" key={index}>
-                    <span className="mega-menu-card-img is-loading" />
-                  </span>
-                ))}
+                  Array.from({length: featuredProductCount}).map((_, index) => (
+                    <span className="mega-menu-card" key={index}>
+                      <span className="mega-menu-card-img is-loading" />
+                    </span>
+                  ))}
             </div>
           </div>
         </div>
@@ -537,9 +543,7 @@ function MobileMenu({
                 aria-expanded={isOpen}
                 aria-label={`Toggle ${department.label} submenu`}
                 className="mobile-nav-toggle reset"
-                onClick={() =>
-                  setOpenDepartment(isOpen ? null : department.id)
-                }
+                onClick={() => setOpenDepartment(isOpen ? null : department.id)}
                 type="button"
               >
                 {isOpen ? '−' : '+'}
@@ -577,7 +581,6 @@ function MobileMenu({
   );
 }
 
-
 function HeaderCtas({
   cart,
   isLoggedIn,
@@ -588,7 +591,7 @@ function HeaderCtas({
       <WishlistToggle />
       <NavLink
         aria-label="Account"
-        className="header-cta-link"
+        className="header-cta-link header-cta-icon"
         prefetch="intent"
         to="/account"
       >
@@ -645,11 +648,18 @@ function WishlistToggle() {
 
 function HeartIcon() {
   return (
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
-        d="M12 20.5l-1.45-1.32C5.4 14.36 2 11.28 2 7.5 2 5.5 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C11.46 4.99 12.96 4 14.5 4 16.5 4 18 5.5 18 7.5c0 3.78-3.4 6.86-8.55 11.68L12 20.5z"
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -677,21 +687,31 @@ function CartBadge({count}: {count: number | null}) {
       }}
     >
       <BagIcon />
-      <span className="header-cart-count">
-        {count === null ? '' : count}
-      </span>
+      <span className="header-cart-count">{count === null ? '' : count}</span>
     </a>
   );
 }
 
 function SearchIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="M20 20l-4.35-4.35"
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="7.25"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.75"
+      />
+      <path
+        d="m20 20-4.5-4.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
         strokeLinecap="round"
       />
     </svg>
@@ -700,11 +720,18 @@ function SearchIcon() {
 
 function PhoneIcon() {
   return (
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.6c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.3 1L6.6 10.8Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -713,13 +740,25 @@ function PhoneIcon() {
 
 function UserIcon() {
   return (
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.6" />
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="8"
+        r="3.75"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
       <path
         d="M4.5 21a7.5 7.5 0 0 1 15 0"
         stroke="currentColor"
         strokeLinecap="round"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
       />
     </svg>
   );
@@ -727,17 +766,25 @@ function UserIcon() {
 
 function BagIcon() {
   return (
-    <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M6 8h12l-1 12.5a1 1 0 0 1-1 .9H8a1 1 0 0 1-1-.9L6 8Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M9 8V6.5a3 3 0 0 1 6 0V8"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -758,4 +805,3 @@ function CartBanner() {
   const cart = useOptimisticCart(originalCart);
   return <CartBadge count={cart?.totalQuantity ?? 0} />;
 }
-

@@ -1,16 +1,16 @@
-import {Link} from 'react-router';
-import {PageLayout} from '~/components/PageLayout';
+import {PolicyDocument} from '~/components/PolicyDocument';
 
 export default function RefundPolicy() {
   return (
-    <div className="section-inner home-section">
-      <div className="page">
-        <h1>Refund & Returns Policy</h1>
+    <PolicyDocument title="Refund & Returns Policy">
+      <section>
         <p>
           If, for any reason, you are not 100% satisfied with your purchase, you
           may make a request to return any product within 14 days of receipt for
           an exchange or store credit (less shipping and handling charges).
         </p>
+      </section>
+      <section>
         <h2>Return Conditions</h2>
         <ul>
           <li>
@@ -48,14 +48,23 @@ export default function RefundPolicy() {
             fee if you decide to cancel your order.
           </li>
         </ul>
-
+      </section>
+      <section>
         <h2>Product Disclaimers</h2>
         <ul>
-          <li>All weights are approximate in 10-karat gold. Final weight will vary plus or minus 15%.</li>
+          <li>
+            All weights are approximate in 10-karat gold. Final weight will vary
+            plus or minus 15%.
+          </li>
           <li>Jewelry may appear larger in photos to show detail.</li>
-          <li>The width of some chain models may vary up to 0.5 mm less due to the finishing style and polishing during manufacturing.</li>
+          <li>
+            The width of some chain models may vary up to 0.5 mm less due to the
+            finishing style and polishing during manufacturing.
+          </li>
         </ul>
-
+      </section>
+      <section>
+        <h2>Custom pieces</h2>
         <p>
           <strong>Note:</strong> Please be advised that all custom-made pieces,
           personalized jewelry, and rings that have been sized to order are
@@ -63,11 +72,7 @@ export default function RefundPolicy() {
           final sale and are strictly non-returnable and non-exchangeable under
           our 14-day policy.
         </p>
-
-        <p>
-          <Link to="/">Back to home</Link>
-        </p>
-      </div>
-    </div>
+      </section>
+    </PolicyDocument>
   );
 }

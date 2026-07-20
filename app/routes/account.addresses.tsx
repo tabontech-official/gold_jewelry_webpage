@@ -262,25 +262,26 @@ export default function Addresses() {
 
   return (
     <div className="account-addresses">
-      <h2>Addresses</h2>
-      <br />
-      {!addresses.nodes.length ? (
-        <p>You have no addresses saved.</p>
-      ) : (
-        <div>
-          <div>
-            <legend>Create address</legend>
-            <NewAddressForm />
-          </div>
-          <br />
-          <hr />
-          <br />
+      <div className="account-page-intro">
+        <p className="account-kicker">Delivery details</p>
+        <h2>Addresses</h2>
+        <p>Save your preferred delivery addresses for a faster checkout.</p>
+      </div>
+      <div className="account-address-create">
+        <h3>Add a new address</h3>
+        <NewAddressForm />
+      </div>
+      <div className="account-address-saved">
+        <h3>Saved addresses</h3>
+        {!addresses.nodes.length ? (
+          <p className="account-empty-copy">You have no saved addresses yet.</p>
+        ) : (
           <ExistingAddresses
             addresses={addresses}
             defaultAddress={defaultAddress}
           />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -326,8 +327,7 @@ function ExistingAddresses({
   defaultAddress,
 }: Pick<CustomerFragment, 'addresses' | 'defaultAddress'>) {
   return (
-    <div>
-      <legend>Existing addresses</legend>
+    <div className="account-address-list">
       {addresses.nodes.map((address) => (
         <AddressForm
           key={address.id}
@@ -377,7 +377,7 @@ export function AddressForm({
   const error = action?.error?.[addressId];
   const isDefaultAddress = defaultAddress?.id === addressId;
   return (
-    <Form id={addressId}>
+    <Form id={addressId} className="account-address-form">
       <fieldset>
         <input type="hidden" name="addressId" defaultValue={addressId} />
         <label htmlFor="firstName">First name*</label>

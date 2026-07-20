@@ -34,6 +34,8 @@ export default async function handleRequest(
       'https://www.youtube.com',
       'https://www.youtube-nocookie.com',
       'https://player.vimeo.com',
+      'https://www.google.com',
+      'https://maps.google.com',
       'https://elfsight.com',
       'https://*.elfsight.com',
       'https://elfsightcdn.com',

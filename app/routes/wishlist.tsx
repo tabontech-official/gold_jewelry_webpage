@@ -9,7 +9,10 @@ export async function action({request, context}: Route.ActionArgs) {
   const form = await request.formData();
   const handle = String(form.get('handle') ?? '');
   if (!handle) {
-    return Response.json({wishlist: getWishlist(context.session), added: false});
+    return Response.json({
+      wishlist: getWishlist(context.session),
+      added: false,
+    });
   }
   const wasWished = getWishlist(context.session).includes(handle);
   const wishlist = toggleWishlist(context.session, handle);
@@ -51,7 +54,7 @@ export default function WishlistPage() {
         {products.length ? (
           <div className="products-grid">
             {products.map((product: any) => (
-              <ProductItem key={product.id} product={product} />
+              <ProductItem key={product.id} product={product} showQuickAdd />
             ))}
           </div>
         ) : (
@@ -60,7 +63,11 @@ export default function WishlistPage() {
             <p className="cart-empty-text">
               Tap the heart on any piece to save it here for later.
             </p>
-            <Link className="btn btn-primary" to="/collections" prefetch="intent">
+            <Link
+              className="btn btn-primary"
+              to="/collections"
+              prefetch="intent"
+            >
               Browse jewelry
             </Link>
           </div>

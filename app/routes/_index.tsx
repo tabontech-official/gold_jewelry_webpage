@@ -386,7 +386,7 @@ export function ShopByCategory({
             id: category.id,
             title: category.title,
             handle: category.handle,
-            image: publicImages[category.handle] ?? category.image?.url,
+            image: category.image?.url ?? publicImages[category.handle],
           }))}
         />
       </div>

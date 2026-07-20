@@ -1,4 +1,9 @@
-import {redirect, useLoaderData, useRouteLoaderData} from 'react-router';
+import {
+  redirect,
+  useLoaderData,
+  useRouteLoaderData,
+  useSearchParams,
+} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import type {HeaderQuery} from 'storefrontapi.generated';
 import {getPaginationVariables, Analytics, Pagination} from '@shopify/hydrogen';
@@ -81,11 +86,7 @@ function getCollectionParentCrumb({
   return parent ? {label: parent.label, to: parent.to} : null;
 }
 
-function CollectionProductBreak({
-  item,
-}: {
-  item: CollectionCoverPhoto;
-}) {
+function CollectionProductBreak({item}: {item: CollectionCoverPhoto}) {
   return (
     <div
       className={`collection-product-break is-${item.align}`}
@@ -202,11 +203,22 @@ function getCoverPhotos(
       nodeHandle.startsWith(`${normalizedHandle}-`) ||
       nodeHandle.endsWith(`-${normalizedHandle}`) ||
       fields.some((field) => {
-        const key = String(field?.key ?? '').toLowerCase().replace(/[_\s]+/g, '-');
-        const value = String(field?.value ?? '').toLowerCase().replace(/[_\s]+/g, '-');
+        const key = String(field?.key ?? '')
+          .toLowerCase()
+          .replace(/[_\s]+/g, '-');
+        const value = String(field?.value ?? '')
+          .toLowerCase()
+          .replace(/[_\s]+/g, '-');
         return (
-          ['section', 'section-handle', 'collection', 'collection-handle', 'category', 'category-handle', 'handle'].includes(key) &&
-          value === normalizedHandle
+          [
+            'section',
+            'section-handle',
+            'collection',
+            'collection-handle',
+            'category',
+            'category-handle',
+            'handle',
+          ].includes(key) && value === normalizedHandle
         );
       });
     if (requireSectionMatch && !belongsToCollection) return;
@@ -216,7 +228,7 @@ function getCoverPhotos(
     });
 
     fields.forEach((field) => {
-        const key = String(field?.key ?? '').toLowerCase();
+      const key = String(field?.key ?? '').toLowerCase();
       const isPhotoField =
         key.includes('image') || key.includes('photo') || key.includes('cover');
       const candidates = [
@@ -257,6 +269,8 @@ function getCoverPhotos(
 
 export default function Collection() {
   const {collection, coverPhotos, faqs} = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const isListView = searchParams.get('view') === 'list';
   const rootData = useRouteLoaderData<RootLoader>('root');
   const parentCrumb = getCollectionParentCrumb({
     handle: collection.handle,
@@ -313,102 +327,110 @@ export default function Collection() {
       <section className="home-section">
         <div className="section-inner collection-layout">
           <CollectionFilterSidebar filters={filters} />
-          <div className="collection-main">
-          <Pagination connection={collection.products}>
-            {({
-              nodes,
-              isLoading,
-              PreviousLink,
-              NextLink,
-              hasNextPage,
-              hasPreviousPage,
-            }) => {
-              const productRows = [];
-              for (let index = 0; index < nodes.length; index += 8) {
-                productRows.push(nodes.slice(index, index + 8));
-              }
+          <div
+            className={`collection-main${isListView ? ' is-list-view' : ''}`}
+          >
+            <Pagination connection={collection.products}>
+              {({
+                nodes,
+                isLoading,
+                PreviousLink,
+                NextLink,
+                hasNextPage,
+                hasPreviousPage,
+              }) => {
+                const productRows = [];
+                for (let index = 0; index < nodes.length; index += 8) {
+                  productRows.push(nodes.slice(index, index + 8));
+                }
 
-              return (
-                <div className="load-more">
-                  {hasPreviousPage && (
-                    <div className="load-more-bar">
-                      <PreviousLink className="load-more-btn is-ghost">
-                        {isLoading ? 'Loading…' : '↑ Load previous'}
-                      </PreviousLink>
-                    </div>
-                  )}
-
-                  {nodes.length === 0 ? (
-                    <p className="collection-empty">
-                      No pieces match these filters. Try clearing a filter.
-                    </p>
-                  ) : (
-                    <>
-                      {productRows.map((row, rowIndex) => (
-                        <div className="collection-product-row" key={row[0]?.id ?? rowIndex}>
-                          <div className="products-grid">
-                            {row.map((product, productIndex) => (
-                              <ProductItem
-                                key={product.id}
-                                product={product}
-                                collectionContext={productCollectionContext}
-                                loading={
-                                  rowIndex === 0 && productIndex < 8
-                                    ? 'eager'
-                                    : 'lazy'
-                                }
-                              />
-                            ))}
-                          </div>
-
-                          {rowIndex < productRows.length - 1 &&
-                            rowIndex < coverPhotos.length && (
-                            <CollectionProductBreak
-                              item={coverPhotos[rowIndex]}
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </>
-                  )}
-
-                  {isLoading && (
-                    <div
-                      className="products-grid collection-load-more-skeleton"
-                      aria-label="Loading more products"
-                    >
-                      {Array.from({length: 4}).map((_, index) => (
-                        <article className="product-item product-skeleton" key={index}>
-                          <div className="product-image-skeleton" />
-                          <div className="product-card-body">
-                            <div className="product-text-skeleton is-title" />
-                            <div className="product-text-skeleton is-price" />
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="load-more-bar">
-                    <span className="load-more-count">
-                      {nodes.length} pieces shown
-                    </span>
-                    {hasNextPage ? (
-                      <NextLink className="load-more-btn">
-                        {isLoading ? 'Loading…' : 'Load More'}
-                      </NextLink>
-                    ) : (
-                      nodes.length > 0 && (
-                        <span className="load-more-end">
-                          That&rsquo;s the whole collection
-                        </span>
-                      )
+                return (
+                  <div className="load-more">
+                    {hasPreviousPage && (
+                      <div className="load-more-bar">
+                        <PreviousLink className="load-more-btn is-ghost">
+                          {isLoading ? 'Loading…' : '↑ Load previous'}
+                        </PreviousLink>
+                      </div>
                     )}
+
+                    {nodes.length === 0 ? (
+                      <p className="collection-empty">
+                        No pieces match these filters. Try clearing a filter.
+                      </p>
+                    ) : (
+                      <>
+                        {productRows.map((row, rowIndex) => (
+                          <div
+                            className="collection-product-row"
+                            key={row[0]?.id ?? rowIndex}
+                          >
+                            <div className="products-grid">
+                              {row.map((product, productIndex) => (
+                                <ProductItem
+                                  key={product.id}
+                                  product={product}
+                                  collectionContext={productCollectionContext}
+                                  loading={
+                                    rowIndex === 0 && productIndex < 8
+                                      ? 'eager'
+                                      : 'lazy'
+                                  }
+                                />
+                              ))}
+                            </div>
+
+                            {rowIndex < productRows.length - 1 &&
+                              rowIndex < coverPhotos.length && (
+                                <CollectionProductBreak
+                                  item={coverPhotos[rowIndex]}
+                                />
+                              )}
+                          </div>
+                        ))}
+                      </>
+                    )}
+
+                    {isLoading && (
+                      <div
+                        className="products-grid collection-load-more-skeleton"
+                        aria-label="Loading more products"
+                      >
+                        {Array.from({length: 4}).map((_, index) => (
+                          <article
+                            className="product-item product-skeleton"
+                            key={index}
+                          >
+                            <div className="product-image-skeleton" />
+                            <div className="product-card-body">
+                              <div className="product-text-skeleton is-title" />
+                              <div className="product-text-skeleton is-price" />
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="load-more-bar">
+                      <span className="load-more-count">
+                        {nodes.length} pieces shown
+                      </span>
+                      {hasNextPage ? (
+                        <NextLink className="load-more-btn">
+                          {isLoading ? 'Loading…' : 'Load More'}
+                        </NextLink>
+                      ) : (
+                        nodes.length > 0 && (
+                          <span className="load-more-end">
+                            That&rsquo;s the whole collection
+                          </span>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            }}
-          </Pagination>
+                );
+              }}
+            </Pagination>
           </div>
         </div>
       </section>

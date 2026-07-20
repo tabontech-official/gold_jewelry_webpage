@@ -18,7 +18,7 @@ export type CoverflowItem = {
 // position is nudged by drag/wheel/keys, and current eases toward it every
 // frame (lerp). Card transforms are derived from the *float* offset, so motion
 // flows instead of snapping card-to-card. Snaps to the nearest card on release.
-const EASE = 0.08; // lerp factor per frame (higher = snappier)
+const EASE = 0.1; // lerp factor per frame (higher = snappier)
 const WHEEL_SPEED = 0.0016; // scroll units per wheel delta
 const DRAG_SPEED = 0.006; // scroll units per px dragged
 const SETTLE_EPS = 0.0005; // stop the rAF loop when current ~= target
@@ -46,7 +46,6 @@ function getInitialCardStyle(index: number, total: number): CSSProperties {
       : Math.max(0, 1 - (distance - solid) / (fadeEdge - solid));
 
   return {
-    filter: `brightness(${1 - Math.min(distance, 2) * 0.05})`,
     opacity,
     pointerEvents: distance <= 1.5 ? 'auto' : 'none',
     transform: `translate(-50%, -50%) translateX(${offset * CARD_SPACING}%) rotateY(${offset * -12}deg) scale(${Math.max(0.4, 1 - distance * 0.12)})`,
@@ -104,9 +103,7 @@ export function CoverflowCarousel({items}: {items: CoverflowItem[]}) {
       // by FADE_EDGE. The wrap seam sits past FADE_EDGE, where cards are already
       // invisible — so the ±n jump happens off-screen and is never seen.
       const opacity =
-        abs <= solid
-          ? 1
-          : Math.max(0, 1 - (abs - solid) / (fadeEdge - solid));
+        abs <= solid ? 1 : Math.max(0, 1 - (abs - solid) / (fadeEdge - solid));
       el.style.opacity = opacity.toFixed(3);
       el.style.pointerEvents = abs <= 1.5 ? 'auto' : 'none';
       el.style.zIndex = String(1000 - Math.round(abs * 100));
@@ -115,8 +112,7 @@ export function CoverflowCarousel({items}: {items: CoverflowItem[]}) {
       const tx = off * CARD_SPACING; // % of card width
       const sc = Math.max(0.4, 1 - abs * 0.12);
       const ry = off * -12;
-      el.style.transform = `translate(-50%, -50%) translateX(${tx}%) rotateY(${ry}deg) scale(${sc})`;
-      el.style.filter = `brightness(${1 - Math.min(abs, 2) * 0.05})`;
+      el.style.transform = `translate3d(-50%, -50%, 0) translateX(${tx}%) rotateY(${ry}deg) scale(${sc})`;
       el.classList.toggle('is-active', abs < 0.5);
     }
   }, [n, wrap]);

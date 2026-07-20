@@ -28,7 +28,12 @@ export function CartLineItem({
   childrenMap: LineItemChildrenMap;
 }) {
   const {id, merchandise} = line;
-  const {product, title, image, selectedOptions} = merchandise;
+  // A quick-add can briefly create an optimistic line before Shopify has
+  // returned the complete variant/product data. Do not try to render a broken
+  // link during that short transition; the confirmed cart response replaces it.
+  if (!merchandise?.product?.handle) return null;
+
+  const {product, title, image, selectedOptions = []} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
   const lineItemChildren = childrenMap[id];

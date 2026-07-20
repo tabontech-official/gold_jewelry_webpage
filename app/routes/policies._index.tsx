@@ -5,7 +5,7 @@ import type {PoliciesQuery, PolicyItemFragment} from 'storefrontapi.generated';
 
 export async function loader({context}: Route.LoaderArgs) {
   const data: PoliciesQuery = await context.storefront.query(POLICIES_QUERY);
-  
+
   const shopPolicies = data.shop;
   const policies: PolicyItemFragment[] = [
     shopPolicies?.privacyPolicy,
@@ -26,17 +26,44 @@ export default function Policies() {
   const {policies} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policies">
-      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Policies'}]} />
-      <h1>Policies</h1>
-      <div>
-        {policies.map((policy) => (
-          <fieldset key={policy.id}>
-            <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-          </fieldset>
-        ))}
+    <main className="policies-page">
+      <div className="section-inner">
+        <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Policies'}]} />
       </div>
-    </div>
+      <section className="policies-hero">
+        <div className="section-inner">
+          <p className="policy-kicker">Gold Custom · Customer care</p>
+          <h1>Policies</h1>
+          <p>
+            Everything you need to know about shopping with Gold Custom, in one
+            clear place.
+          </p>
+        </div>
+      </section>
+      <section className="section-inner policies-directory">
+        <div className="policies-directory-intro">
+          <p className="policy-kicker">Browse policies</p>
+          <h2>Choose a topic</h2>
+        </div>
+        <div className="policies-grid">
+          {policies.map((policy) => (
+            <Link
+              className="policy-card-link"
+              key={policy.id}
+              to={`/policies/${policy.handle}`}
+            >
+              <span className="policy-card-number" aria-hidden="true">
+                {String(policies.indexOf(policy) + 1).padStart(2, '0')}
+              </span>
+              <span className="policy-card-title">{policy.title}</span>
+              <span className="policy-card-action">
+                Read policy <span aria-hidden="true">→</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
 

@@ -38,7 +38,12 @@ function isPriceParam(value: string) {
   }
 }
 
-type GroupedValue = {id: string; label: string; count: number; inputs: string[]};
+type GroupedValue = {
+  id: string;
+  label: string;
+  count: number;
+  inputs: string[];
+};
 
 /** Tags exist in case variants ("14k…" vs "14K…") — merge them into one row. */
 function dedupeValues(values: FilterValue[]): GroupedValue[] {
@@ -69,6 +74,7 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
   const activeFilterParams = searchParams.getAll('filter');
   const activeSet = new Set(activeFilterParams.map(normalize));
   const activeSort = getSortFromParam(searchParams.get('sort'));
+  const view = searchParams.get('view') === 'list' ? 'list' : 'grid';
   const filterGroups = filters.filter(
     (filter) =>
       filter.type !== 'PRICE_RANGE' &&
@@ -78,6 +84,45 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
   const priceBounds = getPriceBounds(
     filters.find((filter) => filter.type === 'PRICE_RANGE'),
   );
+
+  // Active filter chips: match each `filter` param back to its facet label
+  // so the toolbar can show what's applied, e.g. "Metal: 14K Gold ×".
+  const activeChips = activeFilterParams.map((param) => {
+    if (isPriceParam(param)) {
+      const price = getActivePrice(new URLSearchParams([['filter', param]]));
+      return {
+        key: param,
+        label: price ? `Price: $${price.min}–$${price.max}` : 'Price',
+        href: removeFilterHref(param),
+      };
+    }
+    for (const filter of filters) {
+      const match = filter.values.find(
+        (value) => normalize(value.input) === normalize(param),
+      );
+      if (match) {
+        return {
+          key: param,
+          label: `${filter.label}: ${match.label}`,
+          href: removeFilterHref(param),
+        };
+      }
+    }
+    return {key: param, label: 'Filter', href: removeFilterHref(param)};
+  });
+
+  function removeFilterHref(target: string) {
+    const params = new URLSearchParams(searchParams);
+    const existing = params.getAll('filter');
+    params.delete('filter');
+    for (const value of existing) {
+      if (normalize(value) === normalize(target)) continue;
+      params.append('filter', value);
+    }
+    stripPagination(params);
+    const query = params.toString();
+    return query ? `?${query}` : '?';
+  }
 
   function toggleHref(inputs: string[]) {
     const params = new URLSearchParams(searchParams);
@@ -116,9 +161,16 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
     return query ? `?${query}` : '?';
   }
 
+  function viewHref(nextView: 'grid' | 'list') {
+    const params = new URLSearchParams(searchParams);
+    if (nextView === 'grid') params.delete('view');
+    else params.set('view', nextView);
+    const query = params.toString();
+    return query ? `?${query}` : '?';
+  }
+
   return (
     <>
-      {/* Mobile-only toolbar */}
       <div className="collection-toolbar">
         <button
           type="button"
@@ -128,22 +180,43 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
           <FilterIcon />
           <span>Filters</span>
           {activeFilterParams.length > 0 && (
-            <span className="collection-filter-count">{activeFilterParams.length}</span>
+            <span className="collection-filter-count">
+              {activeFilterParams.length}
+            </span>
           )}
         </button>
+        <div className="collection-view-switcher" aria-label="Product view">
+          <Link
+            aria-label="Grid view"
+            aria-pressed={view === 'grid'}
+            className={view === 'grid' ? 'is-active' : ''}
+            preventScrollReset
+            to={viewHref('grid')}
+          >
+            <GridIcon />
+          </Link>
+          <Link
+            aria-label="List view"
+            aria-pressed={view === 'list'}
+            className={view === 'list' ? 'is-active' : ''}
+            preventScrollReset
+            to={viewHref('list')}
+          >
+            <ListIcon />
+          </Link>
+        </div>
         {activeFilterParams.length > 0 && (
           <Link
+            aria-label={`Clear all filters (${activeFilterParams.length})`}
             className="collection-toolbar-clear"
             preventScrollReset
+            title="Clear all filters"
             to={clearHref()}
           >
-            Clear all
+            <span aria-hidden="true">×</span>
+            <span>Clear all</span>
           </Link>
         )}
-        <span className="collection-sort-heading">
-          <SortIcon />
-          <span>Sort</span>
-        </span>
         <div className="collection-sort-select">
           <button
             aria-expanded={sortOpen}
@@ -164,7 +237,9 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
               {SORT_OPTIONS.map((option) => (
                 <Link
                   aria-selected={activeSort.value === option.value}
-                  className={activeSort.value === option.value ? 'is-active' : ''}
+                  className={
+                    activeSort.value === option.value ? 'is-active' : ''
+                  }
                   key={option.value}
                   onClick={() => setSortOpen(false)}
                   preventScrollReset
@@ -177,11 +252,27 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
             </div>
           )}
         </div>
-        <button type="button" onClick={() => setDrawer('filters')}>
-          <span>Sort</span>
-          <span aria-hidden="true">▾</span>
-        </button>
       </div>
+
+      {activeChips.length > 0 && (
+        <div className="collection-active-filters">
+          <span className="collection-active-filters-label">Applied:</span>
+          <ul className="collection-chip-list">
+            {activeChips.map((chip) => (
+              <li key={chip.key}>
+                <Link
+                  className="collection-chip"
+                  preventScrollReset
+                  to={chip.href}
+                >
+                  {chip.label}
+                  <span aria-hidden="true">×</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {drawer && (
         <button
@@ -192,66 +283,60 @@ export function CollectionFilterSidebar({filters}: {filters: Filter[]}) {
         />
       )}
 
-    <aside
-      className={`collection-sidebar${drawer ? ` is-open mode-${drawer}` : ''}`}
-      aria-label="Sort and filter products"
-    >
-      <button
-        type="button"
-        className="sidebar-close"
-        aria-label="Close filters"
-        onClick={() => setDrawer(null)}
+      <aside
+        className={`collection-sidebar${drawer ? ` is-open mode-${drawer}` : ''}`}
+        aria-label="Sort and filter products"
       >
-        ×
-      </button>
-      <div className="sidebar-head">
-        <FilterIcon />
-        <span>Filter</span>
-      </div>
-
-      {activeFilterParams.length > 0 && (
-        <Link className="sidebar-clear" to={clearHref()} preventScrollReset>
-          Clear all ({activeFilterParams.length})
-        </Link>
-      )}
-
-      {priceBounds && (
-        <details className="sidebar-group" open>
-          <summary>Price</summary>
-          <PriceRange bounds={priceBounds} />
-        </details>
-      )}
-
-      {filterGroups.map((filter) => (
-        <details
-          className="sidebar-group"
-          key={filter.id}
-          open={!/tag/i.test(filter.label)}
+        <button
+          type="button"
+          className="sidebar-close"
+          aria-label="Close filters"
+          onClick={() => setDrawer(null)}
         >
-          <summary>{filter.label}</summary>
-          <ul className="sidebar-options">
-            {dedupeValues(filter.values).map((value) => {
-              const checked = value.inputs.some((input) =>
-                activeSet.has(normalize(input)),
-              );
-              return (
-                <li key={value.id}>
-                  <Link
-                    to={toggleHref(value.inputs)}
-                    preventScrollReset
-                    className={`sidebar-option${checked ? ' is-checked' : ''}`}
-                  >
-                    <span className="sidebar-check" aria-hidden="true" />
-                    <span>{value.label}</span>
-                    <span className="sidebar-count">{value.count}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      ))}
-    </aside>
+          ×
+        </button>
+        <div className="sidebar-head">
+          <FilterIcon />
+          <span>Filter</span>
+        </div>
+
+        {priceBounds && (
+          <details className="sidebar-group" open>
+            <summary>Price</summary>
+            <PriceRange bounds={priceBounds} />
+          </details>
+        )}
+
+        {filterGroups.map((filter) => (
+          <details
+            className="sidebar-group"
+            key={filter.id}
+            open={!/tag/i.test(filter.label)}
+          >
+            <summary>{filter.label}</summary>
+            <ul className="sidebar-options">
+              {dedupeValues(filter.values).map((value) => {
+                const checked = value.inputs.some((input) =>
+                  activeSet.has(normalize(input)),
+                );
+                return (
+                  <li key={value.id}>
+                    <Link
+                      to={toggleHref(value.inputs)}
+                      preventScrollReset
+                      className={`sidebar-option${checked ? ' is-checked' : ''}`}
+                    >
+                      <span className="sidebar-check" aria-hidden="true" />
+                      <span>{value.label}</span>
+                      <span className="sidebar-count">{value.count}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        ))}
+      </aside>
     </>
   );
 }
@@ -275,7 +360,9 @@ function getPriceBounds(filter?: Filter): PriceBounds | null {
 function getActivePrice(searchParams: URLSearchParams): PriceBounds | null {
   for (const value of searchParams.getAll('filter')) {
     try {
-      const filter = JSON.parse(value) as {price?: {min?: number; max?: number}};
+      const filter = JSON.parse(value) as {
+        price?: {min?: number; max?: number};
+      };
       if (filter?.price) {
         return {min: filter.price.min ?? 0, max: filter.price.max ?? 0};
       }
@@ -400,7 +487,36 @@ function FilterIcon() {
 function SortIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 4v15m0 0-3-3m3 3 3-3M17 20V5m0 0-3 3m3-3 3 3" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      <path
+        d="M7 4v15m0 0-3-3m3 3 3-3M17 20V5m0 0-3 3m3-3 3 3"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function ListIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M5 6h2v2H5zM9 6h10v2H9zM5 11h2v2H5zM9 11h10v2H9zM5 16h2v2H5zM9 16h10v2H9z"
+        fill="currentColor"
+      />
     </svg>
   );
 }

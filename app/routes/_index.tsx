@@ -44,23 +44,22 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     trustBadgesResponse,
     heroResponse,
     faqsResponse,
-  ] =
-    await Promise.all([
-      context.storefront.query(FEATURED_COLLECTION_QUERY),
-      context.storefront.query(SHOP_BY_CATEGORIES_QUERY),
-      context.storefront.query(TRUST_BADGES_QUERY).catch((error: Error) => {
-        console.error(error);
-        return null;
-      }),
-      context.storefront.query(HERO_CONTENT_QUERY).catch((error: Error) => {
-        console.error(error);
-        return null;
-      }),
-      context.storefront.query(FAQS_QUERY).catch((error: Error) => {
-        console.error(error);
-        return null;
-      }),
-    ]);
+  ] = await Promise.all([
+    context.storefront.query(FEATURED_COLLECTION_QUERY),
+    context.storefront.query(SHOP_BY_CATEGORIES_QUERY),
+    context.storefront.query(TRUST_BADGES_QUERY).catch((error: Error) => {
+      console.error(error);
+      return null;
+    }),
+    context.storefront.query(HERO_CONTENT_QUERY).catch((error: Error) => {
+      console.error(error);
+      return null;
+    }),
+    context.storefront.query(FAQS_QUERY).catch((error: Error) => {
+      console.error(error);
+      return null;
+    }),
+  ]);
 
   return {
     featuredCollection: collections.nodes[0],
@@ -71,6 +70,7 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
       categoryResponse.earrings,
       categoryResponse.pendants,
       categoryResponse.necklaces,
+      categoryResponse.charms,
       categoryResponse.diamond,
       categoryResponse.engagementRings,
     ].filter(Boolean),
@@ -82,32 +82,35 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
   };
 }
 
-// Pulls the hero images + heading out of the hero_content metaobject.
-// Returns null when the metaobject is missing so the hardcoded hero renders.
+// Pulls the homepage hero content from the first hero_content metaobject.
+// The first three image fields form the rotating banner; the fourth is the
+// visual immediately below New Arrivals.
 function parseHeroContent(response: any): HeroContent | null {
   const fields = response?.metaobjects?.nodes?.[0]?.fields;
   if (!Array.isArray(fields)) return null;
 
-  const images: string[] = [];
   const mediaImages: string[] = [];
   let heading: string | null = null;
-  let coverImage: string | null = null;
   for (const field of fields as any[]) {
     const url = field?.reference?.image?.url;
-    const key = String(field?.key ?? '').replace(/[-_\s]+/g, '').toLowerCase();
+    const key = String(field?.key ?? '')
+      .replace(/[-_\s]+/g, '')
+      .toLowerCase();
     if (url) mediaImages.push(url);
-    if (url && key.startsWith('heroimage')) images.push(url);
-    // Use any cover-named field when it exists. Its Shopify image reference is
-    // used directly, so changing the uploaded file/name needs no code update.
-    if (url && key.includes('cover')) coverImage = url;
-    if (field?.key === 'image_heading' && field?.value) heading = field.value;
+    if (
+      !heading &&
+      field?.value &&
+      /^(headline|heading|imageheading)$/.test(key)
+    ) {
+      heading = field.value;
+    }
   }
-  // If the field key is renamed later, the final media image in this content
-  // entry is still the cover image (after the hero slideshow images).
-  if (!coverImage && mediaImages.length > images.length) {
-    coverImage = mediaImages[mediaImages.length - 1] ?? null;
-  }
-  return {heading, images, coverImage};
+
+  return {
+    heading,
+    images: mediaImages.slice(0, 3),
+    coverImage: mediaImages[3] ?? null,
+  };
 }
 
 /**
@@ -176,11 +179,7 @@ export default function Homepage() {
   );
 }
 
-function Hero({
-  content,
-}: {
-  content: HeroContent | null;
-}) {
+function Hero({content}: {content: HeroContent | null}) {
   const images = content?.images ?? [];
   // First line of the heading renders plain, remaining lines in gold italic.
   const [firstLine, ...restLines] = (content?.heading ?? '')
@@ -191,9 +190,8 @@ function Hero({
 
   return (
     <>
-    <section className="hero">
-      {images.length ? (
-        images.map((url, index) => (
+      <section className="hero">
+        {images.map((url, index) => (
           <div
             key={index}
             className="hero-bg"
@@ -208,27 +206,21 @@ function Hero({
             }}
             aria-hidden="true"
           />
-        ))
-      ) : (
-        <>
-          <div className="hero-bg hero-bg-cover" aria-hidden="true" />
-          <div className="hero-bg hero-bg-cover-alt" aria-hidden="true" />
-        </>
-      )}
-      <div className="hero-inner">
-        {firstLine ? (
-          <h1>
-            {firstLine}
-            {restLines.length > 0 && <span>{restLines.join(' ')}</span>}
-          </h1>
-        ) : (
-          <h1>
-            Your Moment Your <span>Story in Gold..</span>
-          </h1>
-        )}
-      </div>
-    </section>
-    <MarketBar />
+        ))}
+        <div className="hero-inner">
+          {firstLine ? (
+            <h1>
+              {firstLine}
+              {restLines.length > 0 && <span>{restLines.join(' ')}</span>}
+            </h1>
+          ) : (
+            <h1>
+              Your Moment Your <span>Story in Gold..</span>
+            </h1>
+          )}
+        </div>
+      </section>
+      <MarketBar />
     </>
   );
 }
@@ -301,12 +293,15 @@ export function parseTrustBadges(response: any) {
   const fields = response?.metaobject?.fields;
   if (!Array.isArray(fields)) return TRUST_PROMISES;
 
-  const valueByKey = fields.reduce((result: Record<string, string>, field: any) => {
-    if (field?.key && typeof field.value === 'string') {
-      result[field.key.replace(/[-_]/g, '').toLowerCase()] = field.value;
-    }
-    return result;
-  }, {});
+  const valueByKey = fields.reduce(
+    (result: Record<string, string>, field: any) => {
+      if (field?.key && typeof field.value === 'string') {
+        result[field.key.replace(/[-_]/g, '').toLowerCase()] = field.value;
+      }
+      return result;
+    },
+    {},
+  );
 
   const fieldKeys = {
     'Certified Purity': ['purity', 'certifiedpurity'],
@@ -327,10 +322,7 @@ export function TrustPromise({badges}: {badges: typeof TRUST_PROMISES}) {
     <section className="home-section trust-promise-section">
       <div className="section-inner">
         <div className="editorial-heading trust-promise-heading">
-          <h2 className="editorial-title">
-            Four Decades of <em>Trust</em>
-          </h2>
-          
+          <h2 className="editorial-title">Our Core Values</h2>
         </div>
         <div className="trust-promise-grid">
           {badges.map((item) => {
@@ -368,7 +360,11 @@ export function TrustPromise({badges}: {badges: typeof TRUST_PROMISES}) {
   );
 }
 
-export function ShopByCategory({categories}: {categories: CategoryTile[] | any[]}) {
+export function ShopByCategory({
+  categories,
+}: {
+  categories: CategoryTile[] | any[];
+}) {
   const publicImages: Record<string, string> = {
     rings: '/gold%20ring.webp',
     chains: '/chain.webp',
@@ -483,7 +479,11 @@ function FeaturedProducts({
           </div>
         </div>
         <div className="split-showcase">
-          <div className="tab-switch" role="tablist" aria-label="Product filter">
+          <div
+            className="tab-switch"
+            role="tablist"
+            aria-label="Product filter"
+          >
             <button
               type="button"
               role="tab"
@@ -503,7 +503,10 @@ function FeaturedProducts({
               Best Selling
             </button>
           </div>
-          <Link className="editorial-viewall split-viewall" to={`/collections/${collection.handle}`}>
+          <Link
+            className="editorial-viewall split-viewall"
+            to={`/collections/${collection.handle}`}
+          >
             View All &rarr;
           </Link>
 
@@ -533,8 +536,8 @@ function FeaturedProducts({
 }
 
 function DiamondValueSection({image}: {image: string | null}) {
-  // This visual is managed in the hero_content metaobject's `cover image`
-  // field. Do not fall back to a gallery/public asset when it is absent.
+  // This is the fourth image from the homepage hero_content metaobject.
+  // Do not fall back to a gallery/public asset when it is absent.
   if (!image) return null;
 
   return (
@@ -578,7 +581,11 @@ function RecommendedProducts({
           </div>
         </div>
         <div className="split-showcase">
-          <div className="tab-switch" role="tablist" aria-label="New arrivals filter">
+          <div
+            className="tab-switch"
+            role="tablist"
+            aria-label="New arrivals filter"
+          >
             {(['all', 'women', 'men'] as const).map((value) => (
               <button
                 key={value}
@@ -632,7 +639,10 @@ function RecommendedProducts({
 
 function ProductSliderSkeleton() {
   return (
-    <div className="slider-section product-skeleton-slider" aria-label="Loading products">
+    <div
+      className="slider-section product-skeleton-slider"
+      aria-label="Loading products"
+    >
       <div className="slider-track">
         {Array.from({length: 4}).map((_, index) => (
           <ProductCardSkeleton key={index} className="slider-item" />
@@ -645,7 +655,11 @@ function ProductSliderSkeleton() {
 function ProductCardSkeleton({className}: {className?: string}) {
   return (
     <article
-      className={className ? `product-item product-skeleton ${className}` : 'product-item product-skeleton'}
+      className={
+        className
+          ? `product-item product-skeleton ${className}`
+          : 'product-item product-skeleton'
+      }
     >
       <div className="product-image-skeleton" />
       <div className="product-card-body">
@@ -733,6 +747,9 @@ export const SHOP_BY_CATEGORIES_QUERY = `#graphql
     necklaces: collection(handle: "necklaces") {
       ...CategoryCollection
     }
+    charms: collection(handle: "charms") {
+      ...CategoryCollection
+    }
     diamond: collection(handle: "diamond") {
       ...CategoryCollection
     }
@@ -758,7 +775,6 @@ export const TRUST_BADGES_QUERY = `#graphql
     }
   }
 ` as const;
-
 
 // First (and only) hero_content metaobject entry: 3 rotating images + heading.
 const HERO_CONTENT_QUERY = `#graphql

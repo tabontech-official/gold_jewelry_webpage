@@ -1209,6 +1209,11 @@ export type ShopByCategoriesQuery = {
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url' | 'altText'>>;
     }
   >;
+  charms?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle'> & {
+      image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url' | 'altText'>>;
+    }
+  >;
   diamond?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle'> & {
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url' | 'altText'>>;
@@ -2614,7 +2619,7 @@ interface GeneratedQueryTypes {
     return: FeaturedCollectionQuery;
     variables: FeaturedCollectionQueryVariables;
   };
-  '#graphql\n  fragment CategoryCollection on Collection {\n    id\n    title\n    handle\n    image {\n      url\n      altText\n    }\n  }\n  query ShopByCategories($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    rings: collection(handle: "rings") {\n      ...CategoryCollection\n    }\n    chains: collection(handle: "chains") {\n      ...CategoryCollection\n    }\n    bracelets: collection(handle: "bracelets") {\n      ...CategoryCollection\n    }\n    earrings: collection(handle: "earrings") {\n      ...CategoryCollection\n    }\n    pendants: collection(handle: "pendants") {\n      ...CategoryCollection\n    }\n    necklaces: collection(handle: "necklaces") {\n      ...CategoryCollection\n    }\n    diamond: collection(handle: "diamond") {\n      ...CategoryCollection\n    }\n    engagementRings: collection(handle: "engagement-rings") {\n      ...CategoryCollection\n    }\n  }\n': {
+  '#graphql\n  fragment CategoryCollection on Collection {\n    id\n    title\n    handle\n    image {\n      url\n      altText\n    }\n  }\n  query ShopByCategories($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    rings: collection(handle: "rings") {\n      ...CategoryCollection\n    }\n    chains: collection(handle: "chains") {\n      ...CategoryCollection\n    }\n    bracelets: collection(handle: "bracelets") {\n      ...CategoryCollection\n    }\n    earrings: collection(handle: "earrings") {\n      ...CategoryCollection\n    }\n    pendants: collection(handle: "pendants") {\n      ...CategoryCollection\n    }\n    necklaces: collection(handle: "necklaces") {\n      ...CategoryCollection\n    }\n    charms: collection(handle: "charms") {\n      ...CategoryCollection\n    }\n    diamond: collection(handle: "diamond") {\n      ...CategoryCollection\n    }\n    engagementRings: collection(handle: "engagement-rings") {\n      ...CategoryCollection\n    }\n  }\n': {
     return: ShopByCategoriesQuery;
     variables: ShopByCategoriesQueryVariables;
   };

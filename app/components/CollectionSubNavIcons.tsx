@@ -11,6 +11,16 @@ import {
 
 type IconItem = {key: string; title: string; to: string; handle: string};
 
+// Add a collection here only when it belongs to a parent department but is
+// absent from that department's Shopify navigation menu. This keeps one
+// controlled extension point for future product groups and avoids duplicates.
+const SUPPLEMENTAL_SUBCATEGORIES: Record<
+  string,
+  Array<{title: string; handle: string}>
+> = {
+  pendants: [{title: 'Religious Pendants', handle: 'religious-pendants'}],
+};
+
 function collectionHandleFromPath(path: string): string | null {
   const match = path.match(/\/collections\/([^/?#]+)/);
   return match ? match[1] : null;
@@ -32,8 +42,15 @@ export function CollectionSubNavIcons({
 }) {
   const primaryDomainUrl = header.shop.primaryDomain.url;
   const currentPath = `/collections/${handle}`;
+  const supplementalParentHandle = Object.entries(
+    SUPPLEMENTAL_SUBCATEGORIES,
+  ).find(
+    ([parentHandle, subcategories]) =>
+      parentHandle === handle ||
+      subcategories.some((subcategory) => subcategory.handle === handle),
+  )?.[0];
   const department =
-    getMegaMenuDepartmentForHandle(handle) ??
+    getMegaMenuDepartmentForHandle(supplementalParentHandle ?? handle) ??
     MEGA_MENU.find((menuDepartment) =>
       menuDepartment.columns.some((column) =>
         getColumnItems(header, column).some((item) => {
@@ -46,6 +63,25 @@ export function CollectionSubNavIcons({
       ),
     );
 
+  const menuItems: IconItem[] = department
+    ? department.columns
+        .flatMap((column) => getColumnItems(header, column))
+        .flatMap((item) => {
+          if (!item.url) return [];
+          const to = toRelativeUrl(
+            item.url,
+            primaryDomainUrl,
+            publicStoreDomain,
+          );
+          const itemHandle = collectionHandleFromPath(to);
+          return itemHandle
+            ? [{key: item.id, title: item.title, to, handle: itemHandle}]
+            : [];
+        })
+    : [];
+  const supplementalItems =
+    SUPPLEMENTAL_SUBCATEGORIES[supplementalParentHandle ?? ''] ?? [];
+  const seenHandles = new Set(menuItems.map((item) => item.handle));
   const items: IconItem[] = department
     ? [
         {
@@ -54,19 +90,15 @@ export function CollectionSubNavIcons({
           to: department.to,
           handle: collectionHandleFromPath(department.to) ?? '',
         },
-        ...department.columns
-          .flatMap((column) => getColumnItems(header, column))
-          .flatMap((item) => {
-            if (!item.url) return [];
-            const to = toRelativeUrl(
-              item.url,
-              primaryDomainUrl,
-              publicStoreDomain,
-            );
-            const itemHandle = collectionHandleFromPath(to);
-            if (!itemHandle) return [];
-            return [{key: item.id, title: item.title, to, handle: itemHandle}];
-          }),
+        ...menuItems,
+        ...supplementalItems
+          .filter((item) => !seenHandles.has(item.handle))
+          .map((item) => ({
+            key: item.handle,
+            title: item.title,
+            to: `/collections/${item.handle}`,
+            handle: item.handle,
+          })),
       ]
     : [];
 

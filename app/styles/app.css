@@ -6031,11 +6031,17 @@ button.reset:hover:not(:has(> *)) {
 
 /* Homepage FAQ â€” a centered, quietly luxurious accordion after categories. */
 .homepage-faq-section {
+  background: transparent;
+  border: 0;
+}
+
+.homepage-faq-panel {
   background:
     radial-gradient(circle at 50% 0, rgba(209, 174, 97, 0.2), transparent 36rem),
     #fbfaf7;
   border-top: 1px solid rgba(160, 126, 55, 0.15);
   border-bottom: 1px solid rgba(160, 126, 55, 0.15);
+  padding: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .homepage-faq-heading {
@@ -6052,11 +6058,7 @@ button.reset:hover:not(:has(> *)) {
   text-transform: uppercase;
 }
 
-.homepage-faq-heading h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3vw, 2.7rem);
-  font-weight: 400;
-  letter-spacing: -0.03em;
+.homepage-faq-heading .editorial-title {
   margin: 0.55rem 0 0.7rem;
 }
 
@@ -7374,6 +7376,18 @@ button.reset:hover:not(:has(> *)) {
   text-underline-offset: 3px;
 }
 
+/* The large centered title and the absolute action compete for the same row
+   on narrow phones. Keep the action readable by giving it its own line. */
+@media (max-width: 42em) {
+  .editorial-viewall {
+    position: static;
+    display: block;
+    width: fit-content;
+    margin: 0.6rem 0 0 auto;
+    padding: 0.35rem 0;
+  }
+}
+
 /*
 * --------------------------------------------------
 * Homepage trust promise
@@ -7397,12 +7411,6 @@ button.reset:hover:not(:has(> *)) {
   margin-left: auto;
   margin-right: auto;
   max-width: 52rem;
-}
-
-.trust-promise-heading em {
-  color: var(--color-gold-dark);
-  font-style: italic;
-  font-weight: 500;
 }
 
 .trust-promise-heading p {

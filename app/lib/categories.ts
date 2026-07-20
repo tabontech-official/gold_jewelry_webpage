@@ -51,6 +51,7 @@ export const CATEGORIES: StorefrontCategory[] = [
   {label: 'Earrings', handle: 'earrings'},
   {label: 'Pendants', handle: 'pendants'},
   {label: 'Necklaces', handle: 'necklaces'},
+  {label: 'Charms', handle: 'charms'},
   {label: 'Diamond', handle: 'diamond'},
   {label: 'Engagement', handle: 'engagement-rings'},
 ];

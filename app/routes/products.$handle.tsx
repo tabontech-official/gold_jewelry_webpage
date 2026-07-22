@@ -2,7 +2,6 @@ import {Suspense} from 'react';
 import {
   redirect,
   useLoaderData,
-  useNavigate,
   Await,
   Link,
   useLocation,
@@ -387,6 +386,15 @@ function ProductWishlistButton({handle}: {handle: string}) {
   );
 }
 
+// Weight unit comes back as a shouty enum (GRAMS, KILOGRAMS, OUNCES, POUNDS)
+// — shorten to the abbreviation shoppers actually expect.
+const WEIGHT_UNIT_LABEL: Record<string, string> = {
+  GRAMS: 'g',
+  KILOGRAMS: 'kg',
+  OUNCES: 'oz',
+  POUNDS: 'lb',
+};
+
 function ProductAccordions({
   vendor,
   categoryName,
@@ -400,6 +408,16 @@ function ProductAccordions({
   descriptionHtml?: string | null;
   selectedVariant: any;
 }) {
+  // The variant's Shipping-panel weight, straight from the Storefront API.
+  const materialWeight =
+    typeof selectedVariant?.weight === 'number' && selectedVariant.weight > 0
+      ? `${selectedVariant.weight} ${
+          WEIGHT_UNIT_LABEL[selectedVariant.weightUnit] ??
+          selectedVariant.weightUnit ??
+          ''
+        }`.trim()
+      : null;
+
   const specs = [
     {label: 'Brand', value: vendor?.trim() || 'Gold Jewelry Co.'},
     {label: 'Category', value: categoryName || 'Fine Jewelry'},
@@ -440,16 +458,14 @@ function ProductAccordions({
         </div>
       </details>
 
-      <details className="product-details">
-        <summary>Material</summary>
-        <div className="product-details-body">
-          <p>
-            Crafted from real precious metals and inspected before shipping.
-            Metal, stone, and finish details follow the selected variant and
-            product specifications above.
-          </p>
-        </div>
-      </details>
+      {materialWeight && (
+        <details className="product-details">
+          <summary>Material Weight</summary>
+          <div className="product-details-body">
+            <p>Approximate weight: {materialWeight}</p>
+          </div>
+        </details>
+      )}
       <details className="product-details">
         <summary>Exchanges/Returns</summary>
         <div className="product-details-body">
@@ -603,7 +619,6 @@ function ProductFaqSection({faqs}: {faqs: Faq[]}) {
 
 
 function LengthArticleSelect({data}: {data: LengthArticles | null}) {
-  const navigate = useNavigate();
   const {pathname} = useLocation();
   if (!data || data.options.length < 2) return null;
 
@@ -620,19 +635,23 @@ function LengthArticleSelect({data}: {data: LengthArticles | null}) {
         {data.options.map((option) => {
           const selected = option.length === data.current;
           return (
-            <button
+            <Link
               key={option.handle}
-              type="button"
               className={`variant-tag${selected ? ' is-selected' : ''}`}
               aria-pressed={selected}
-              onClick={() => {
-                if (!selected) {
-                  void navigate(replaceProductHandleInPath(pathname, option.handle));
-                }
+              prefetch="intent"
+              preventScrollReset
+              to={
+                selected
+                  ? '#'
+                  : replaceProductHandleInPath(pathname, option.handle)
+              }
+              onClick={(event) => {
+                if (selected) event.preventDefault();
               }}
             >
               {option.length}&quot;
-            </button>
+            </Link>
           );
         })}
       </div>
@@ -889,6 +908,8 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       amount
       currencyCode
     }
+    weight
+    weightUnit
   }
 ` as const;
 

@@ -1,5 +1,5 @@
 import type {CSSProperties, ReactNode} from 'react';
-import {useLocation, useNavigate, Link} from 'react-router';
+import {useLocation, Link} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
@@ -14,7 +14,6 @@ export function ProductForm({
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   wishlistButton?: ReactNode;
 }) {
-  const navigate = useNavigate();
   const {pathname} = useLocation();
   const {open} = useAside();
 
@@ -37,43 +36,56 @@ export function ProductForm({
               role="group"
               aria-labelledby={`option-label-${option.name}`}
             >
-              {option.optionValues.map((value) => (
-                <button
-                  key={option.name + value.name}
-                  type="button"
-                  className={`variant-tag${value.selected ? ' is-selected' : ''}${
-                    !value.available ? ' is-unavailable' : ''
-                  }`}
-                  style={getVariantTagStyle(option.name, value.name)}
-                  aria-pressed={value.selected}
-                  disabled={!value.exists && !value.isDifferentProduct}
-                  onClick={() => {
-                    if (value.selected) return;
+              {option.optionValues.map((value) => {
+                const className = `variant-tag${value.selected ? ' is-selected' : ''}${
+                  !value.available ? ' is-unavailable' : ''
+                }`;
+                const style = getVariantTagStyle(option.name, value.name);
 
-                    // A value that maps to a different product (combined
-                    // listing) takes the shopper straight to that product
-                    // page; otherwise we just update the variant search
-                    // param in place.
-                    if (value.isDifferentProduct) {
-                      const nextPath = replaceProductHandleInPath(
-                        pathname,
-                        value.handle,
-                      );
-                      void navigate(
-                        `${nextPath}?${value.variantUriQuery}`,
-                        {preventScrollReset: true},
-                      );
-                    } else {
-                      void navigate(`?${value.variantUriQuery}`, {
-                        replace: true,
-                        preventScrollReset: true,
-                      });
-                    }
-                  }}
-                >
-                  {value.name}
-                </button>
-              ))}
+                // Disabled (no matching variant at all) can't be a link.
+                if (!value.exists && !value.isDifferentProduct) {
+                  return (
+                    <button
+                      key={option.name + value.name}
+                      type="button"
+                      className={className}
+                      style={style}
+                      aria-pressed={value.selected}
+                      disabled
+                    >
+                      {value.name}
+                    </button>
+                  );
+                }
+
+                // A value that maps to a different product (combined
+                // listing) takes the shopper straight to that product page;
+                // otherwise it just swaps the variant search param in place.
+                // Both are real links (not onClick+navigate) so Hydrogen can
+                // prefetch the target on hover/touch instead of only
+                // starting the fetch after the click.
+                const to = value.isDifferentProduct
+                  ? `${replaceProductHandleInPath(pathname, value.handle)}?${value.variantUriQuery}`
+                  : `?${value.variantUriQuery}`;
+
+                return (
+                  <Link
+                    key={option.name + value.name}
+                    className={className}
+                    style={style}
+                    aria-pressed={value.selected}
+                    prefetch="intent"
+                    preventScrollReset
+                    replace={!value.isDifferentProduct}
+                    to={value.selected ? '#' : to}
+                    onClick={(event) => {
+                      if (value.selected) event.preventDefault();
+                    }}
+                  >
+                    {value.name}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         );

@@ -5,6 +5,7 @@ import {
   NavLink,
   useAsyncValue,
   useFetcher,
+  useNavigate,
   useRouteLoaderData,
 } from 'react-router';
 import type {RootLoader} from '~/root';
@@ -136,6 +137,7 @@ function RegionSelector() {
 
 function HeaderSearchBar() {
   const fetcher = useFetcher<PredictiveSearchReturn>({key: 'header-search'});
+  const navigate = useNavigate();
   const [term, setTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -158,9 +160,17 @@ function HeaderSearchBar() {
     setIsOpen(false);
   }
 
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!term.trim()) return;
+    inputRef.current?.blur();
+    setIsOpen(false);
+    void navigate(`${SEARCH_ENDPOINT}?q=${encodeURIComponent(term)}`);
+  }
+
   return (
     <div className="header-search">
-      <form onSubmit={(event) => event.preventDefault()} role="search">
+      <form onSubmit={handleSubmit} role="search">
         <input
           aria-label="Search"
           autoComplete="off"

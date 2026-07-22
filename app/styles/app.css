@@ -613,7 +613,7 @@ button.reset:hover:not(:has(> *)) {
 .announcement-text {
   color: #000;
   display: inline-block;
-  font-size: clamp(0.82rem, 1.1vw, 1rem);
+  font-size: clamp(0.66rem, 0.82vw, 0.78rem);
   font-weight: 600;
   justify-self: center;
   letter-spacing: 0.16em;
@@ -630,8 +630,8 @@ button.reset:hover:not(:has(> *)) {
   }
 
   .announcement-text {
-    font-size: 0.54rem;
-    letter-spacing: 0.07em;
+    font-size: 0.48rem;
+    letter-spacing: 0.06em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4916,6 +4916,73 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
+/* Search page */
+.search-page {
+  padding: 1.5rem 0 4rem;
+}
+
+.search-page-header {
+  max-width: 40rem;
+  margin: 0.5rem 0 2.5rem;
+}
+
+.search-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.search-page-summary {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.search-page-error {
+  color: #b3261e;
+  margin-bottom: 1.5rem;
+}
+
+.search-page-empty {
+  padding: 4rem 0;
+  text-align: center;
+  color: var(--color-ink-soft);
+  font-size: 1rem;
+}
+
+.search-page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.search-result-heading {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0 0 1.25rem;
+}
+
+.search-result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.search-result-list a {
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.search-result-list a:hover {
+  color: var(--color-gold-dark);
+  border-bottom-color: var(--color-gold);
+}
+
 /* Product card — clean and flat: image, centered copy, black bar on hover */
 .product-item {
   position: relative;
@@ -8589,4 +8656,175 @@ button.reset:hover:not(:has(> *)) {
   .collection-view-switcher {
     display: inline-flex;
   }
+}
+
+/* Video rail: small TikTok-style cards, several per row, infinite
+   auto-scroll (Embla + AutoScroll plugin). Scale is the only animated
+   property on hover — cheap on the compositor. */
+.video-rail {
+  position: relative;
+}
+
+.video-rail-viewport {
+  overflow: hidden;
+}
+
+.video-rail-container {
+  display: flex;
+  touch-action: pan-y;
+}
+
+.video-rail-slide {
+  flex: 0 0 42%;
+  min-width: 0;
+  padding: 0 0.4rem;
+  cursor: pointer;
+}
+
+.video-rail-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-bg-soft);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 9 / 14;
+  transition: transform 0.25s ease;
+}
+
+.video-rail-slide:hover .video-rail-card,
+.video-rail-slide.is-active .video-rail-card {
+  transform: scale(1.03);
+}
+
+.video-rail-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-rail-play {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.video-rail-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-gold);
+  background: #fff;
+  color: var(--color-gold-dark);
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.video-rail-arrow:hover {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+.video-rail-arrow-prev {
+  left: -0.75rem;
+}
+
+.video-rail-arrow-next {
+  right: -0.75rem;
+}
+
+@media (min-width: 40em) {
+  .video-rail-slide {
+    flex: 0 0 28%;
+  }
+}
+
+@media (min-width: 60em) {
+  .video-rail-slide {
+    flex: 0 0 16.666%;
+  }
+}
+
+/* Simple full-video lightbox: dark backdrop, one player, close button. */
+.video-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.video-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.video-lightbox-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+}
+
+.video-lightbox-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  flex-shrink: 0;
+}
+
+.video-lightbox-media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  border-radius: 8px;
+  display: block;
+}
+
+.video-lightbox-caption {
+  margin: 0;
+  padding: 0 0.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-y: auto;
+  max-height: 20vh;
 }

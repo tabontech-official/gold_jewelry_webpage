@@ -1,7 +1,8 @@
 import {Link} from 'react-router';
-import {Image, Money, Pagination} from '@shopify/hydrogen';
+import {Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
 import {AutoLoadMore} from '~/components/AutoLoadMore';
+import {ProductItem} from '~/components/ProductItem';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
@@ -40,10 +41,10 @@ function SearchResultsArticles({
   }
 
   return (
-    <div className="search-result">
-      <h2>Articles</h2>
-      <div>
-        {articles?.nodes?.map((article) => {
+    <div className="search-result-section">
+      <h2 className="search-result-heading">Articles</h2>
+      <ul className="search-result-list">
+        {articles.nodes.map((article) => {
           const articleUrl = urlWithTrackingParams({
             baseUrl: `/blogs/${article.handle}`,
             trackingParams: article.trackingParameters,
@@ -51,15 +52,14 @@ function SearchResultsArticles({
           });
 
           return (
-            <div className="search-results-item" key={article.id}>
+            <li key={article.id}>
               <Link prefetch="intent" to={articleUrl}>
                 {article.title}
               </Link>
-            </div>
+            </li>
           );
         })}
-      </div>
-      <br />
+      </ul>
     </div>
   );
 }
@@ -70,10 +70,10 @@ function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
   }
 
   return (
-    <div className="search-result">
-      <h2>Pages</h2>
-      <div>
-        {pages?.nodes?.map((page) => {
+    <div className="search-result-section">
+      <h2 className="search-result-heading">Pages</h2>
+      <ul className="search-result-list">
+        {pages.nodes.map((page) => {
           const pageUrl = urlWithTrackingParams({
             baseUrl: `/pages/${page.handle}`,
             trackingParams: page.trackingParameters,
@@ -81,15 +81,14 @@ function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
           });
 
           return (
-            <div className="search-results-item" key={page.id}>
+            <li key={page.id}>
               <Link prefetch="intent" to={pageUrl}>
                 {page.title}
               </Link>
-            </div>
+            </li>
           );
         })}
-      </div>
-      <br />
+      </ul>
     </div>
   );
 }
@@ -103,61 +102,42 @@ function SearchResultsProducts({
   }
 
   return (
-    <div className="search-result">
-      <h2>Products</h2>
+    <div className="search-result-section">
+      <h2 className="search-result-heading">Products</h2>
       <Pagination connection={products}>
-        {({nodes, isLoading, NextLink, PreviousLink, hasNextPage}) => {
-          const ItemsMarkup = nodes.map((product) => {
-            const productUrl = urlWithTrackingParams({
-              baseUrl: `/products/${product.handle}`,
-              trackingParams: product.trackingParameters,
-              term,
-            });
-
-            const price = product?.selectedOrFirstAvailableVariant?.price;
-            const image = product?.selectedOrFirstAvailableVariant?.image;
-
-            return (
-              <div className="search-results-item" key={product.id}>
-                <Link prefetch="intent" to={productUrl}>
-                  {image && (
-                    <Image data={image} alt={product.title} width={50} />
-                  )}
-                  <div>
-                    <p>{product.title}</p>
-                    <small>{price && <Money data={price} />}</small>
-                  </div>
-                </Link>
-              </div>
-            );
-          });
-
-          return (
-            <div>
-              <div>
-                <PreviousLink>
-                  {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
-                </PreviousLink>
-              </div>
-              <div>
-                {ItemsMarkup}
-                <br />
-              </div>
-              <div className="load-more-bar">
-                <AutoLoadMore hasNextPage={hasNextPage} isLoading={isLoading} />
-                <NextLink className="load-more-btn">
-                  {isLoading ? 'Loading...' : <span>Load more ↓</span>}
-                </NextLink>
-              </div>
+        {({nodes, isLoading, NextLink, PreviousLink, hasNextPage}) => (
+          <div>
+            <div className="load-more">
+              <PreviousLink className="load-more-btn is-ghost">
+                {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+              </PreviousLink>
             </div>
-          );
-        }}
+            <div className="products-grid">
+              {nodes.map((product, index) => (
+                <ProductItem
+                  key={product.id}
+                  product={product}
+                  loading={index < 8 ? 'eager' : undefined}
+                />
+              ))}
+            </div>
+            <div className="load-more-bar">
+              <AutoLoadMore hasNextPage={hasNextPage} isLoading={isLoading} />
+              <NextLink className="load-more-btn">
+                {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+              </NextLink>
+            </div>
+          </div>
+        )}
       </Pagination>
-      <br />
     </div>
   );
 }
 
 function SearchResultsEmpty() {
-  return <p>No results, try a different search.</p>;
+  return (
+    <div className="search-page-empty">
+      <p>No results found. Try a different search term.</p>
+    </div>
+  );
 }

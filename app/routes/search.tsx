@@ -3,7 +3,6 @@ import {
 } from 'react-router';
 import type {Route} from './+types/search';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {Breadcrumb} from '~/components/Breadcrumb';
 import {
@@ -40,39 +39,39 @@ export default function SearchPage() {
   const {type, term, result, error} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
 
+  const hasResults = Boolean(term) && Boolean(result?.total);
+
   return (
-    <div className="search">
-      <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Search'}]} />
-      <h1>Search</h1>
-      <SearchForm>
-        {({inputRef}) => (
-          <>
-            <input
-              defaultValue={term}
-              name="q"
-              placeholder="Search…"
-              ref={inputRef}
-              type="search"
-            />
-            &nbsp;
-            <button type="submit">Search</button>
-          </>
-        )}
-      </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      {!term || !result?.total ? (
-        <SearchResults.Empty />
-      ) : (
-        <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
-            <div>
-              <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
-            </div>
+    <div className="search-page">
+      <div className="section-inner">
+        <Breadcrumb items={[{label: 'Home', to: '/'}, {label: 'Search'}]} />
+        <div className="search-page-header">
+          <h1 className="search-page-title">Search</h1>
+          {term && (
+            <p className="search-page-summary">
+              {result?.total
+                ? `${result.total} result${result.total === 1 ? '' : 's'} for "${term}"`
+                : `No results for "${term}"`}
+            </p>
           )}
-        </SearchResults>
-      )}
+        </div>
+
+        {error && <p className="search-page-error">{error}</p>}
+
+        {!hasResults ? (
+          <SearchResults.Empty />
+        ) : (
+          <SearchResults result={result} term={term}>
+            {({articles, pages, products, term}) => (
+              <div className="search-page-sections">
+                <SearchResults.Products products={products} term={term} />
+                <SearchResults.Pages pages={pages} term={term} />
+                <SearchResults.Articles articles={articles} term={term} />
+              </div>
+            )}
+          </SearchResults>
+        )}
+      </div>
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
   );
@@ -91,6 +90,19 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     title
     trackingParameters
     vendor
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
     selectedOrFirstAvailableVariant(
       selectedOptions: []
       ignoreUnknownOptions: true

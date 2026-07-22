@@ -8661,8 +8661,30 @@ button.reset:hover:not(:has(> *)) {
 /* Video rail: small TikTok-style cards, several per row, infinite
    auto-scroll (Embla + AutoScroll plugin). Scale is the only animated
    property on hover — cheap on the compositor. */
+.video-rail-heading h2 span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.5em;
+  font-weight: 500;
+  color: var(--color-gold-dark);
+  text-shadow: none;
+}
+
+/* Desktop: noticeably wider than the other content sections. Raising
+   max-width alone does nothing below the 1700px content cap — most desktop
+   viewports never actually hit that cap, so the container's true width is
+   set by its side padding instead. Shrinking the padding here widens the
+   usable row without any risk of viewport overflow. */
+@media (min-width: 60em) {
+  .video-rail-section .section-inner {
+    max-width: calc(var(--content-max-width) * 1.2);
+    padding: 0 1rem;
+  }
+}
+
 .video-rail {
   position: relative;
+  margin-top: 1.5rem;
 }
 
 .video-rail-viewport {
@@ -8677,12 +8699,13 @@ button.reset:hover:not(:has(> *)) {
 .video-rail-slide {
   flex: 0 0 42%;
   min-width: 0;
-  padding: 0 0.4rem;
+  padding: 0 0.6rem;
   cursor: pointer;
 }
 
 .video-rail-card {
   position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 14px;
   overflow: hidden;
   background: var(--color-bg-soft);
@@ -8754,13 +8777,15 @@ button.reset:hover:not(:has(> *)) {
 
 @media (min-width: 40em) {
   .video-rail-slide {
-    flex: 0 0 28%;
+    flex: 0 0 30%;
+    padding: 0 0.75rem;
   }
 }
 
 @media (min-width: 60em) {
   .video-rail-slide {
-    flex: 0 0 16.666%;
+    flex: 0 0 20%;
+    padding: 0 1rem;
   }
 }
 

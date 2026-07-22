@@ -59,8 +59,11 @@ export function VideoCarousel({items}: {items: VideoCarouselItem[]}) {
   return (
     <section className="home-section video-rail-section">
       <div className="section-inner">
-        <div className="editorial-heading">
-          <h2 className="editorial-title">As Seen On TikTok</h2>
+        <div className="editorial-heading video-rail-heading">
+          <h2 className="editorial-title">
+            Follow us on TikTok
+            <span>@goldcustomla</span>
+          </h2>
         </div>
         <div className="video-rail">
           <div className="video-rail-viewport" ref={emblaRef}>

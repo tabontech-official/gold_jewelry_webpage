@@ -213,7 +213,7 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, vendor} = product;
+  const {title, descriptionHtml} = product;
   const mediaItems = normalizeMedia(product.media?.nodes ?? [], title);
   const productJsonLd = buildProductJsonLd({
     product,
@@ -311,9 +311,6 @@ export default function Product() {
           />
 
           <ProductAccordions
-            vendor={vendor}
-            categoryName={categoryName}
-            sku={sku}
             descriptionHtml={descriptionHtml}
             selectedVariant={selectedVariant}
           />
@@ -395,16 +392,25 @@ const WEIGHT_UNIT_LABEL: Record<string, string> = {
   POUNDS: 'lb',
 };
 
+/**
+ * Split the description HTML on `<h5>` headings. The first chunk (the intro
+ * paragraph, before any heading) renders visible under the product; every
+ * `<h5>` and the content up to the next `<h5>` becomes a collapsable panel.
+ */
+function splitDescriptionByH5(html: string) {
+  const parts = html.split(/<h5[^>]*>/i);
+  const intro = parts[0]?.trim() || '';
+  const sections = parts.slice(1).map((part) => {
+    const [heading, ...rest] = part.split(/<\/h5>/i);
+    return {heading: heading.replace(/<[^>]+>/g, '').trim(), body: rest.join('')};
+  });
+  return {intro, sections};
+}
+
 function ProductAccordions({
-  vendor,
-  categoryName,
-  sku,
   descriptionHtml,
   selectedVariant,
 }: {
-  vendor?: string | null;
-  categoryName: string;
-  sku?: string | null;
   descriptionHtml?: string | null;
   selectedVariant: any;
 }) {
@@ -418,45 +424,26 @@ function ProductAccordions({
         }`.trim()
       : null;
 
-  const specs = [
-    {label: 'Brand', value: vendor?.trim() || 'Gold Jewelry Co.'},
-    {label: 'Category', value: categoryName || 'Fine Jewelry'},
-    {label: 'SKU', value: sku?.trim() || 'Available on request'},
-    {label: 'Variant', value: selectedVariant?.title || 'Default selection'},
-    {
-      label: 'Availability',
-      value: selectedVariant?.availableForSale
-        ? 'In stock'
-        : 'Check availability',
-    },
-  ];
+  const {intro, sections} = splitDescriptionByH5(descriptionHtml || '');
 
   return (
     <div className="product-accordions">
-      <details className="product-details" open>
-        <summary>Product Details</summary>
-        <div className="product-details-body">
-          {descriptionHtml ? (
-            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-          ) : (
-            <p>Details for this piece will be updated soon.</p>
-          )}
-        </div>
-      </details>
+      {intro && (
+        <div
+          className="product-description-intro"
+          dangerouslySetInnerHTML={{__html: intro}}
+        />
+      )}
 
-      <details className="product-details">
-        <summary>Specifications</summary>
-        <div className="product-details-body">
-          <dl className="product-spec-list">
-            {specs.map((spec) => (
-              <div className="product-spec-row" key={spec.label}>
-                <dt>{spec.label}</dt>
-                <dd>{spec.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </details>
+      {sections.map((section) => (
+        <details className="product-details" key={section.heading}>
+          <summary>{section.heading}</summary>
+          <div
+            className="product-details-body"
+            dangerouslySetInnerHTML={{__html: section.body}}
+          />
+        </details>
+      ))}
 
       {materialWeight && (
         <details className="product-details">

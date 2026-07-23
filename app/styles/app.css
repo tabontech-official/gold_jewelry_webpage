@@ -5786,19 +5786,30 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
-.product-details-body {
+.product-details-body,
+.product-description-intro {
   padding: 0 0 1.25rem;
   color: var(--color-ink);
   font-size: 0.92rem;
   line-height: 1.7;
 }
 
-.product-details-body :where(p, ul, ol) {
+.product-details-body :where(p, ul, ol),
+.product-description-intro :where(p, ul, ol) {
   margin: 0 0 0.85rem;
 }
 
-.product-details-body ul {
+.product-details-body ul,
+.product-description-intro ul {
   padding-left: 1.1rem;
+}
+
+/* Keep every nested element in the description at the same size/face. */
+.product-details-body :where(p, ul, ol, li, span, div),
+.product-description-intro :where(p, ul, ol, li, span, div) {
+  font-size: inherit;
+  line-height: inherit;
+  font-family: inherit;
 }
 
 .product-price {
@@ -5988,8 +5999,21 @@ button.reset:hover:not(:has(> *)) {
 
 .product-buy-row form {
   display: flex;
-  flex: 1;
   max-width: none;
+}
+
+/* Only the Add-to-Bag form grows; the wishlist form hugs its heart square. */
+.product-buy-row form:has(.product-atc) {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.product-buy-row form:not(:has(.product-atc)) {
+  flex: 0 0 auto;
+}
+
+.product-buy-row .product-atc {
+  flex: 1 1 auto;
 }
 
 .product-buy-row .product-quantity-stepper {
@@ -6183,6 +6207,14 @@ button.reset:hover:not(:has(> *)) {
 /* Accordion stack under the buy area */
 .product-accordions {
   margin-top: 0.25rem;
+}
+
+/* Visible intro copy sits above the collapsable sections. */
+.product-description-intro {
+  margin-bottom: 1rem;
+}
+
+.product-accordions .product-details:first-of-type {
   border-top: 1px solid var(--color-border);
 }
 
@@ -6312,6 +6344,10 @@ button.reset:hover:not(:has(> *)) {
   display: grid;
   gap: 0.8rem;
   text-align: left;
+  /* Cap the list so long FAQ sets scroll instead of dominating the page. */
+  max-height: 30rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .pdp-faq {

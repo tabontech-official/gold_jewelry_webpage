@@ -3199,7 +3199,7 @@ button.reset:hover:not(:has(> *)) {
   background:
     linear-gradient(
       90deg,
-      rgba(185, 144, 144, 0.96) 0%,
+      rgba(255, 255, 255, 0.96) 0%,
       rgba(255, 255, 255, 0.86) 24%,
       rgba(255, 255, 255, 0.4) 42%,
       rgba(255, 255, 255, 0.05) 64%,
@@ -3226,7 +3226,6 @@ button.reset:hover:not(:has(> *)) {
   inset: 0;
   opacity: 0;
   position: absolute;
-  z-index: -2;
 }
 
 .hero-bg-cover {

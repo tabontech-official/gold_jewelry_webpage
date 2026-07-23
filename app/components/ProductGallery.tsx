@@ -67,43 +67,15 @@ export function ProductGallery({
   }
 
   const activeItem = items.find((item) => item.key === activeKey) ?? items[0];
-  const activeIndex = Math.max(
-    0,
-    items.findIndex((item) => item.key === activeItem.key),
-  );
-  const thumbs = items.slice(0, 5);
-  const showSliderButtons = items.length > 1;
-  const goToItem = (direction: -1 | 1) => {
-    const nextIndex = (activeIndex + direction + items.length) % items.length;
-    setActiveKey(items[nextIndex].key);
-  };
 
   return (
-    <div className="product-grid-gallery">
-      <GalleryTile media={activeItem} title={title} featured />
-      {showSliderButtons && (
-        <div className="pgg-slider-controls" aria-label="Product gallery controls">
-          <button
-            type="button"
-            className="pgg-slider-btn"
-            aria-label="Previous product media"
-            onClick={() => goToItem(-1)}
-          >
-            <ChevronIcon direction="left" />
-          </button>
-          <button
-            type="button"
-            className="pgg-slider-btn"
-            aria-label="Next product media"
-            onClick={() => goToItem(1)}
-          >
-            <ChevronIcon direction="right" />
-          </button>
-        </div>
-      )}
-      {thumbs.length > 1 && (
-        <div className="pgg-thumbs" aria-label="Product media">
-          {thumbs.map((m) => {
+    <div
+      className="product-grid-gallery"
+      data-count={Math.min(items.length, 9)}
+    >
+      {items.length > 1 && (
+        <div className="pgg-rail" aria-label="Product media">
+          {items.map((m) => {
             const selected = m.key === activeItem.key;
             return (
               <button
@@ -125,6 +97,9 @@ export function ProductGallery({
           })}
         </div>
       )}
+      <div className="pgg-stage">
+        <GalleryTile media={activeItem} title={title} featured />
+      </div>
       <div className="pgg-preload" aria-hidden="true">
         {items
           .filter((m) => m.kind === 'image' && m.image?.url)
@@ -174,8 +149,29 @@ function GalleryTile({
   title: string;
   featured?: boolean;
 }) {
+  // Hover-to-zoom on the featured image: pan the transform-origin to the
+  // cursor so the shopper can inspect detail without any forced crop at rest.
+  const [zoom, setZoom] = useState(false);
+  const [origin, setOrigin] = useState('50% 50%');
+  const isZoomable = featured && m.kind === 'image' && !!m.image;
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isZoomable) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+  };
+
   return (
-    <div className={featured ? 'pgg-feature' : 'pgg-tile'}>
+    <div
+      className={`${featured ? 'pgg-feature' : 'pgg-tile'}${
+        zoom ? ' is-zoomed' : ''
+      }`}
+      onMouseEnter={isZoomable ? () => setZoom(true) : undefined}
+      onMouseLeave={isZoomable ? () => setZoom(false) : undefined}
+      onMouseMove={onMove}
+    >
       {m.kind === 'image' && m.image ? (
         <Image
           data={{
@@ -187,6 +183,7 @@ function GalleryTile({
           alt={m.image.altText || m.alt || title}
           sizes={featured ? '(min-width: 48em) 52vw, 100vw' : '96px'}
           loading="eager"
+          style={featured ? {transformOrigin: origin} : undefined}
         />
       ) : m.kind === 'video' && m.sources?.length ? (
         <VideoPlayer
@@ -273,18 +270,4 @@ function mediaLabel(kind: GalleryMedia['kind']) {
   if (kind === 'video') return 'product video';
   if (kind === 'external') return 'product video';
   return 'product image';
-}
-
-function ChevronIcon({direction}: {direction: 'left' | 'right'}) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d={direction === 'left' ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 }

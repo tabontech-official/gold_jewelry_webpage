@@ -8,6 +8,7 @@ export function AddToCartButton({
   disabled,
   lines,
   onClick,
+  redirectTo,
 }: {
   analytics?: unknown;
   children: React.ReactNode;
@@ -15,6 +16,8 @@ export function AddToCartButton({
   disabled?: boolean;
   lines: Array<OptimisticCartLineInput>;
   onClick?: () => void;
+  /** When set, the cart action redirects here after adding (express flow). */
+  redirectTo?: string;
 }) {
   return (
     <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
@@ -25,6 +28,9 @@ export function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
+          {redirectTo && (
+            <input name="redirectTo" type="hidden" value={redirectTo} />
+          )}
           <button
             type="submit"
             className={className}

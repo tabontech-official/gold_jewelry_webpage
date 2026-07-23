@@ -1,95 +1,93 @@
-import type {CSSProperties, ReactNode} from 'react';
-import {useLocation, Link} from 'react-router';
+import type {ReactNode} from 'react';
+import {useLocation, useNavigate, Link} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
+import {PremiumSelect, type PremiumSelectOption} from './PremiumSelect';
 import type {ProductFragment} from 'storefrontapi.generated';
+
+export type VariantGroupSelect = {
+  label: string;
+  options: Array<{
+    handle: string;
+    name: string;
+    available: boolean;
+    selected: boolean;
+  }>;
+};
 
 export function ProductForm({
   productOptions,
   selectedVariant,
   wishlistButton,
+  variantGroup,
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   wishlistButton?: ReactNode;
+  variantGroup?: VariantGroupSelect | null;
 }) {
   const {pathname} = useLocation();
+  const navigate = useNavigate();
   const {open} = useAside();
+
+  // Shopify options with more than one value become premium dropdowns.
+  const optionSelects = productOptions
+    .filter((option) => option.optionValues.length > 1)
+    .map((option) => {
+      const options: Array<PremiumSelectOption & {to: string | null}> =
+        option.optionValues.map((value) => {
+          const to =
+            !value.exists && !value.isDifferentProduct
+              ? null // no matching variant — unselectable
+              : value.isDifferentProduct
+                ? `${replaceProductHandleInPath(pathname, value.handle)}?${value.variantUriQuery}`
+                : `?${value.variantUriQuery}`;
+          return {
+            key: option.name + value.name,
+            name: value.name,
+            selected: value.selected,
+            available: value.available,
+            to,
+          };
+        });
+      return {label: option.name, options};
+    });
 
   return (
     <div className="product-form">
-      {productOptions.map((option) => {
-        // Don't render a picker for an option that has only one value.
-        if (option.optionValues.length === 1) return null;
+      <div className="product-selectors">
+        {optionSelects.map((select) => (
+          <PremiumSelect
+            key={select.label}
+            label={select.label}
+            options={select.options}
+            onSelect={(picked) => {
+              const target = select.options.find((o) => o.key === picked.key);
+              if (target?.to) {
+                navigate(target.to, {preventScrollReset: true});
+              }
+            }}
+          />
+        ))}
 
-        return (
-          <div className="product-options" key={option.name}>
-            <span
-              className="product-options-label"
-              id={`option-label-${option.name}`}
-            >
-              {option.name}
-            </span>
-            <div
-              className="variant-tags"
-              role="group"
-              aria-labelledby={`option-label-${option.name}`}
-            >
-              {option.optionValues.map((value) => {
-                const className = `variant-tag${value.selected ? ' is-selected' : ''}${
-                  !value.available ? ' is-unavailable' : ''
-                }`;
-                const style = getVariantTagStyle(option.name, value.name);
-
-                // Disabled (no matching variant at all) can't be a link.
-                if (!value.exists && !value.isDifferentProduct) {
-                  return (
-                    <button
-                      key={option.name + value.name}
-                      type="button"
-                      className={className}
-                      style={style}
-                      aria-pressed={value.selected}
-                      disabled
-                    >
-                      {value.name}
-                    </button>
-                  );
-                }
-
-                // A value that maps to a different product (combined
-                // listing) takes the shopper straight to that product page;
-                // otherwise it just swaps the variant search param in place.
-                // Both are real links (not onClick+navigate) so Hydrogen can
-                // prefetch the target on hover/touch instead of only
-                // starting the fetch after the click.
-                const to = value.isDifferentProduct
-                  ? `${replaceProductHandleInPath(pathname, value.handle)}?${value.variantUriQuery}`
-                  : `?${value.variantUriQuery}`;
-
-                return (
-                  <Link
-                    key={option.name + value.name}
-                    className={className}
-                    style={style}
-                    aria-pressed={value.selected}
-                    prefetch="intent"
-                    preventScrollReset
-                    replace={!value.isDifferentProduct}
-                    to={value.selected ? '#' : to}
-                    onClick={(event) => {
-                      if (value.selected) event.preventDefault();
-                    }}
-                  >
-                    {value.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+        {variantGroup && (
+          <PremiumSelect
+            label={variantGroup.label}
+            options={variantGroup.options.map((o) => ({
+              key: o.handle,
+              name: o.name,
+              selected: o.selected,
+              available: o.available,
+            }))}
+            onSelect={(picked) => {
+              navigate(replaceProductHandleInPath(pathname, picked.key), {
+                preventScrollReset: true,
+              });
+            }}
+          />
+        )}
+      </div>
 
       <div className="product-purchase-grid">
         <div className="product-buy-row">
@@ -111,10 +109,38 @@ export function ProductForm({
                 : []
             }
           >
-            {selectedVariant?.availableForSale ? 'Add to bag' : 'Sold out'}
+            {selectedVariant?.availableForSale
+              ? `Add to bag${
+                  selectedVariant.price
+                    ? ` - ${formatMoney(selectedVariant.price)}`
+                    : ''
+                }`
+              : 'Sold out'}
           </AddToCartButton>
           {wishlistButton}
         </div>
+
+        {selectedVariant?.availableForSale && (
+          <div className="product-express">
+            <AddToCartButton
+              className="product-more-payment"
+              redirectTo="@checkout"
+              lines={
+                selectedVariant
+                  ? [
+                      {
+                        merchandiseId: selectedVariant.id,
+                        quantity: 1,
+                        selectedVariant,
+                      },
+                    ]
+                  : []
+              }
+            >
+              More payment options
+            </AddToCartButton>
+          </div>
+        )}
       </div>
 
       <p className="product-finance-note">
@@ -132,25 +158,12 @@ function replaceProductHandleInPath(pathname: string, handle?: string | null) {
   return `/${[...parts.slice(0, -1), handle].map(encodeURIComponent).join('/')}`;
 }
 
-function getVariantTagStyle(optionName: string, valueName: string) {
-  if (!/color|metal|finish/i.test(optionName)) return undefined;
-
-  const value = valueName.toLowerCase();
-  if (value.includes('yellow')) {
-    return {'--variant-bg': '#f7d672'} as CSSProperties;
-  }
-  if (value.includes('white')) {
-    return {'--variant-bg': '#d9d9d9'} as CSSProperties;
-  }
-  if (value.includes('rose')) {
-    return {'--variant-bg': '#f0aaaa'} as CSSProperties;
-  }
-  if (value.includes('black')) {
-    return {
-      '--variant-bg': '#111111',
-      '--variant-fg': '#ffffff',
-    } as CSSProperties;
-  }
-
-  return undefined;
+function formatMoney(price: {amount: string; currencyCode: string}) {
+  const amount = Number(price.amount);
+  if (!Number.isFinite(amount)) return '';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: price.currencyCode || 'USD',
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
 }

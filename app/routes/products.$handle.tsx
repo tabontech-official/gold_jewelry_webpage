@@ -4,7 +4,6 @@ import {
   useLoaderData,
   Await,
   Link,
-  useLocation,
   useRouteLoaderData,
 } from 'react-router';
 import type {Route} from './+types/products.$handle';
@@ -20,6 +19,7 @@ import type {ProductRecommendationsQuery} from 'storefrontapi.generated';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductGallery, type GalleryMedia} from '~/components/ProductGallery';
 import {ProductForm} from '~/components/ProductForm';
+import {AddToCartButton} from '~/components/AddToCartButton';
 import {GoogleReviewsSection} from '~/components/GoogleReviewsSection';
 import {HorizontalCarousel} from '~/components/HorizontalCarousel';
 import {ProductItem} from '~/components/ProductItem';
@@ -53,65 +53,56 @@ export async function loader(args: Route.LoaderArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  // Sibling "length" articles (deferred — never blocks the page).
-  const lengthArticles = loadLengthArticles(args.context, criticalData.product);
-
-  return {...deferredData, ...criticalData, lengthArticles};
+  return {...deferredData, ...criticalData};
 }
 
-/**
- * Many chains/necklaces exist as separate products per length (16", 18" …).
- * Find those siblings by matching every product whose title is identical once
- * the length is stripped out, so the shopper can jump straight to any length.
- */
-function parseLength(text: string) {
-  // Matches "16 Inches", "26-Inches", "22 Inch", "26in", "18\"", "18”" etc.
-  const match = text.match(
-    /(\d+(?:\.\d+)?)\s*-?\s*(?:inch(?:es)?\b|in\b|["”″])/i,
-  );
-  if (!match) return null;
-  const length = parseFloat(match[1]);
-  const baseKey = text
-    .replace(match[0], ' ')
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return {length, baseKey};
-}
-
-type LengthArticles = {
-  current: number;
-  options: Array<{handle: string; length: number}>;
+type VariantGroupOption = {
+  handle: string;
+  name: string;
+  available: boolean;
+  selected: boolean;
 };
 
-function loadLengthArticles(
-  context: Route.LoaderArgs['context'],
-  product: {title: string; handle: string},
-): Promise<LengthArticles | null> {
-  const info = parseLength(product.title);
-  if (!info) return Promise.resolve(null);
+type VariantGroup = {
+  label: string;
+  options: VariantGroupOption[];
+};
 
-  return context.storefront
-    .query(SIBLING_PRODUCTS_QUERY, {variables: {query: info.baseKey}})
-    .then((res: any) => {
-      const nodes: Array<{handle: string; title: string}> =
-        res?.products?.nodes ?? [];
-      const seen = new Set<number>();
-      const options = nodes
-        .map((node) => {
-          const parsed = parseLength(node.title);
-          if (!parsed || parsed.baseKey !== info.baseKey) return null;
-          if (seen.has(parsed.length)) return null;
-          seen.add(parsed.length);
-          return {handle: node.handle, length: parsed.length};
-        })
-        .filter((item): item is {handle: string; length: number} => item !== null)
-        .sort((a, b) => a.length - b.length);
+/**
+ * Variant siblings are linked by metafields (not Shopify combined listings):
+ * `custom.varianthandle` is a product_reference list of every product in the
+ * group, `custom.variant_name` is each product's option value (e.g. 26"),
+ * and `custom.variant_label` names the selector (e.g. "Length"). Build the
+ * dropdown from those so selecting a value opens that product.
+ *
+ * `parseLen` only decides sort order — the labels come straight from the
+ * metafield, so a non-numeric variant_name still renders, just unsorted.
+ */
+function parseLen(value: string) {
+  const match = value.match(/\d+(?:\.\d+)?/);
+  return match ? parseFloat(match[0]) : Number.POSITIVE_INFINITY;
+}
 
-      return options.length > 1 ? {current: info.length, options} : null;
+function buildVariantGroup(product: any): VariantGroup | null {
+  const nodes: any[] = product?.variantGroup?.references?.nodes ?? [];
+  const label = product?.variantLabel?.value?.trim();
+  if (!label || nodes.length < 2) return null;
+
+  const options: VariantGroupOption[] = nodes
+    .map((node) => {
+      const name = node?.variantName?.value?.trim();
+      if (!node?.handle || !name) return null;
+      return {
+        handle: node.handle,
+        name,
+        available: node.availableForSale !== false,
+        selected: node.handle === product.handle,
+      };
     })
-    .catch(() => null);
+    .filter((o): o is VariantGroupOption => o !== null)
+    .sort((a, b) => parseLen(a.name) - parseLen(b.name));
+
+  return options.length > 1 ? {label, options} : null;
 }
 
 /**
@@ -193,7 +184,7 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product, recommendedProducts, lengthArticles, breadcrumbContext} =
+  const {product, recommendedProducts, breadcrumbContext} =
     useLoaderData<typeof loader>();
   const root = useRouteLoaderData<any>('root');
 
@@ -297,17 +288,21 @@ export default function Product() {
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
           </div>
-
-          <Suspense fallback={null}>
-            <Await resolve={lengthArticles}>
-              {(data) => <LengthArticleSelect data={data} />}
-            </Await>
-          </Suspense>
+          <MonthlyEstimate
+            price={selectedVariant?.price}
+            variant={selectedVariant}
+          />
+          <ProductSpecIcons
+            keyword={`${selectedVariant?.title ?? ''} ${title}`}
+            weight={selectedVariant?.weight}
+            weightUnit={selectedVariant?.weightUnit}
+          />
 
           <ProductForm
             productOptions={productOptions}
             selectedVariant={selectedVariant}
             wishlistButton={<ProductWishlistButton handle={product.handle} />}
+            variantGroup={buildVariantGroup(product)}
           />
 
           <ProductAccordions descriptionHtml={descriptionHtml} />
@@ -564,44 +559,161 @@ function ProductFaqSection({faqs}: {faqs: Faq[]}) {
 }
 
 
-function LengthArticleSelect({data}: {data: LengthArticles | null}) {
-  const {pathname} = useLocation();
-  if (!data || data.options.length < 2) return null;
+/**
+ * Derive a karat + metal tone from a variant/product keyword like
+ * "10K Yellow Gold" or "14k White Gold". Returns null when no karat is found
+ * (e.g. length variants), so the badge only shows when it's meaningful.
+ */
+function parseKarat(keyword: string) {
+  const karatMatch = keyword.match(/\b(\d{1,2})\s?k\b/i);
+  if (!karatMatch) return null;
+  const karat = `${karatMatch[1]}K`;
+
+  const lower = keyword.toLowerCase();
+  const tone: 'yellow' | 'white' | 'rose' = lower.includes('white')
+    ? 'white'
+    : lower.includes('rose') || lower.includes('pink')
+      ? 'rose'
+      : 'yellow';
+
+  const toneLabel = {yellow: 'Yellow Gold', white: 'White Gold', rose: 'Rose Gold'}[
+    tone
+  ];
+  return {karat, tone, label: `${karat} ${toneLabel}`};
+}
+
+const WEIGHT_UNIT_ABBR: Record<string, string> = {
+  GRAMS: 'g',
+  KILOGRAMS: 'kg',
+  OUNCES: 'oz',
+  POUNDS: 'lb',
+};
+
+/**
+ * Product-spec highlights under the price — metal, width, weight, length —
+ * read from the variant/title. Each row only renders when its value exists.
+ */
+function ProductSpecIcons({
+  keyword,
+  weight,
+  weightUnit,
+}: {
+  keyword: string;
+  weight?: number | null;
+  weightUnit?: string | null;
+}) {
+  const karat = parseKarat(keyword);
+  const width = keyword.match(/(\d+(?:\.\d+)?)\s*mm\b/i)?.[1];
+  const length = keyword.match(
+    /(\d+(?:\.\d+)?)\s*-?\s*(?:inch(?:es)?\b|in\b|["”″])/i,
+  )?.[1];
+  const weightLabel =
+    typeof weight === 'number' && weight > 0
+      ? `Approx. ${weight}${WEIGHT_UNIT_ABBR[weightUnit ?? ''] ?? weightUnit ?? ''}`
+      : null;
+
+  const specs: Array<{icon: SpecIconName; label: string; toneClass?: string}> = [];
+  if (karat)
+    specs.push({
+      icon: 'metal',
+      label: `Solid ${karat.label}`,
+      toneClass: `spec-icon--${karat.tone}`,
+    });
+  if (width) specs.push({icon: 'width', label: `${width}mm Width`});
+  if (weightLabel) specs.push({icon: 'weight', label: weightLabel});
+  if (length) specs.push({icon: 'length', label: `${length} Inch Length`});
+
+  if (!specs.length) return null;
 
   return (
-    <div className="product-options">
-      <span className="product-options-label" id="option-label-length">
-        Length
-      </span>
-      <div
-        className="variant-tags"
-        role="group"
-        aria-labelledby="option-label-length"
-      >
-        {data.options.map((option) => {
-          const selected = option.length === data.current;
-          return (
-            <Link
-              key={option.handle}
-              className={`variant-tag${selected ? ' is-selected' : ''}`}
-              aria-pressed={selected}
-              prefetch="intent"
-              preventScrollReset
-              to={
-                selected
-                  ? '#'
-                  : replaceProductHandleInPath(pathname, option.handle)
-              }
-              onClick={(event) => {
-                if (selected) event.preventDefault();
-              }}
-            >
-              {option.length}&quot;
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+    <ul className="product-specs" aria-label="Product specifications">
+      {specs.map((spec) => (
+        <li className="product-spec-item" key={spec.label}>
+          <SpecIcon name={spec.icon} className={spec.toneClass} />
+          <span>{spec.label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type SpecIconName = 'metal' | 'width' | 'weight' | 'length';
+
+function SpecIcon({name, className}: {name: SpecIconName; className?: string}) {
+  const common = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.7,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+    className: `product-spec-svg${className ? ` ${className}` : ''}`,
+  };
+  switch (name) {
+    case 'metal': // faceted gold ingot / bar
+      return (
+        <svg {...common}>
+          <path d="M5 9l2.5-3h9L19 9l-7 10z" />
+          <path d="M5 9h14M9.5 6l2.5 3 2.5-3M12 9v10" />
+        </svg>
+      );
+    case 'width': // horizontal caliper span
+      return (
+        <svg {...common}>
+          <path d="M3 12h18M3 8v8M21 8v8M7 10l-2 2 2 2M17 10l2 2-2 2" />
+        </svg>
+      );
+    case 'weight': // scale weight
+      return (
+        <svg {...common}>
+          <path d="M8 7h8l3 12H5zM9 7a3 3 0 0 1 6 0" />
+        </svg>
+      );
+    case 'length': // vertical ruler
+      return (
+        <svg {...common}>
+          <path d="M12 3v18M8 5l4-2 4 2M8 19l4 2 4-2M9 8h6M9 12h6M9 16h6" />
+        </svg>
+      );
+  }
+}
+
+/** Estimated monthly installment (price / 12) with a sample-plans link. */
+function MonthlyEstimate({
+  price,
+  variant,
+}: {
+  price?: {amount: string; currencyCode: string};
+  variant?: {id: string; availableForSale?: boolean} | null;
+}) {
+  const amount = Number(price?.amount);
+  if (!price || !Number.isFinite(amount) || amount <= 0) return null;
+
+  const perMonth = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: price.currencyCode || 'USD',
+  }).format(amount / 12);
+
+  // "View sample plans" adds the item and jumps straight to the Shopify
+  // checkout (payment) page, where the installment plans are shown.
+  const canCheckout = variant?.id && variant.availableForSale !== false;
+
+  return (
+    <p className="product-monthly">
+      From <strong>{perMonth}/mo</strong> with{' '}
+      {canCheckout ? (
+        <AddToCartButton
+          className="product-monthly-link"
+          redirectTo="@checkout"
+          lines={[{merchandiseId: variant!.id, quantity: 1}]}
+        >
+          View sample plans
+        </AddToCartButton>
+      ) : (
+        <Link to="/policies/finance">View sample plans</Link>
+      )}
+    </p>
   );
 }
 
@@ -674,12 +786,6 @@ function normalizeMedia(nodes: any[], title: string): GalleryMedia[] {
       }
     })
     .filter((item): item is GalleryMedia => item !== null);
-}
-
-function replaceProductHandleInPath(pathname: string, handle: string) {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts[0] !== 'products') return `/products/${handle}`;
-  return `/${[...parts.slice(0, -1), handle].map(encodeURIComponent).join('/')}`;
 }
 
 function buildHierarchicalProductPath({
@@ -876,6 +982,25 @@ const PRODUCT_FRAGMENT = `#graphql
     faqs: metafield(namespace: "custom", key: "ai_faq") {
       value
     }
+    variantLabel: metafield(namespace: "custom", key: "variant_label") {
+      value
+    }
+    variantName: metafield(namespace: "custom", key: "variant_name") {
+      value
+    }
+    variantGroup: metafield(namespace: "custom", key: "varianthandle") {
+      references(first: 30) {
+        nodes {
+          ... on Product {
+            handle
+            availableForSale
+            variantName: metafield(namespace: "custom", key: "variant_name") {
+              value
+            }
+          }
+        }
+      }
+    }
     media(first: 25) {
       nodes {
         __typename
@@ -948,21 +1073,6 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
-` as const;
-
-const SIBLING_PRODUCTS_QUERY = `#graphql
-  query SiblingProducts(
-    $query: String!
-    $country: CountryCode
-    $language: LanguageCode
-  ) @inContext(country: $country, language: $language) {
-    products(first: 100, query: $query) {
-      nodes {
-        handle
-        title
-      }
-    }
-  }
 ` as const;
 
 const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql

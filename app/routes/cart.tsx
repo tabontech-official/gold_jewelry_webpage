@@ -88,7 +88,13 @@ export async function action({request, context}: Route.ActionArgs) {
   const redirectTo = formData.get('redirectTo') ?? null;
   if (typeof redirectTo === 'string') {
     status = 303;
-    headers.set('Location', redirectTo);
+    // "@checkout" → jump straight to the freshly-added cart's Shopify
+    // checkout (payment) page; anything else is a normal path redirect.
+    const location =
+      redirectTo === '@checkout'
+        ? cartResult?.checkoutUrl ?? '/cart'
+        : redirectTo;
+    headers.set('Location', location);
   }
 
   return data(

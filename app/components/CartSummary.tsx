@@ -13,7 +13,6 @@ type CartSummaryProps = {
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
-  const [agreed, setAgreed] = useState(false);
 
   return (
     <div aria-labelledby="cart-summary" className={className}>
@@ -38,18 +37,9 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </>
       )}
 
-      <label className="cart-terms">
-        <input
-          type="checkbox"
-          checked={agreed}
-          onChange={(e) => setAgreed(e.target.checked)}
-        />
-        <span>I agree with the terms and conditions.</span>
-      </label>
-
       <div className="cart-actions">
         {layout === 'aside' && <ViewCartLink />}
-        <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} disabled={!agreed} />
+        <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
       </div>
     </div>
   );
@@ -125,23 +115,13 @@ function NoteIcon() {
   );
 }
 
-function CartCheckoutActions({
-  checkoutUrl,
-  disabled,
-}: {
-  checkoutUrl?: string;
-  disabled?: boolean;
-}) {
+function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   if (!checkoutUrl) return null;
 
   return (
     <a
-      className={`btn btn-primary cart-checkout-btn ${disabled ? 'is-disabled' : ''}`}
-      href={disabled ? undefined : checkoutUrl}
-      aria-disabled={disabled}
-      onClick={(e) => {
-        if (disabled) e.preventDefault();
-      }}
+      className="btn btn-primary cart-checkout-btn"
+      href={checkoutUrl}
       target="_self"
     >
       Check out

@@ -3243,9 +3243,9 @@ button.reset:hover:not(:has(> *)) {
   transform: scale(1.001);
 }
 
-/* Portrait mobile hero image — hidden on desktop; the mobile media query below
-   reveals it and lets it drive the hero height at its natural aspect ratio. */
-.hero-mobile-image {
+/* Portrait mobile hero slider — hidden on desktop; the mobile media query
+   below reveals it and lets it drive the hero height at natural aspect ratio. */
+.hero-mobile-slider {
   display: none;
 }
 
@@ -3441,6 +3441,22 @@ button.reset:hover:not(:has(> *)) {
     background-position: center;
   }
 
+  /* Mobile slider dots: lower on the image and 36% smaller than desktop. */
+  .hero-dots {
+    bottom: 0.7rem;
+    gap: 0.48rem;
+  }
+
+  .hero-dot {
+    width: 0.61rem;
+    height: 0.61rem;
+    border-width: 1.3px;
+  }
+
+  .hero-dot.is-active {
+    width: 1.92rem;
+  }
+
   .hero-inner {
     aspect-ratio: 16 / 9;
     min-height: 0;
@@ -3450,18 +3466,39 @@ button.reset:hover:not(:has(> *)) {
     max-width: 100%;
   }
 
-  /* When a mobile hero image is present: show the full portrait at its natural
-     height (it sets the hero's height), hide the rotating banners + dots, and
-     float the heading over the bottom of the picture. Without it, the hero
-     keeps the default banner behavior above (desktop-banner fallback). */
+  /* When the mobile hero slider is present: show it at natural height (it sets
+     the hero's height), hide the desktop banner track + its dots, and float the
+     heading over the bottom of the picture. Without it, the hero keeps the
+     default banner behavior above (desktop-banner fallback). */
+  .hero[data-has-mobile] .hero-mobile-slider {
+    display: block;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    /* Allow vertical page scroll; horizontal swipe is handled in JS
+       (preventDefault on a non-passive listener). */
+    touch-action: pan-y;
+  }
+
+  /* Slides sit in a flex row translated by JS; each fills the viewport width
+     and keeps its portrait aspect ratio. The first slide sets the height. */
+  .hero-mobile-track {
+    display: flex;
+    width: 100%;
+    will-change: transform;
+  }
+
   .hero[data-has-mobile] .hero-mobile-image {
     display: block;
+    flex: 0 0 100%;
     width: 100%;
     height: auto;
   }
 
-  .hero[data-has-mobile] .hero-track,
-  .hero[data-has-mobile] .hero-dots {
+  /* Hide the desktop background-slide track and ITS dots (direct children of
+     .hero), but keep the mobile slider's own dots inside .hero-mobile-slider. */
+  .hero[data-has-mobile] > .hero-track,
+  .hero[data-has-mobile] > .hero-dots {
     display: none;
   }
 
@@ -3469,6 +3506,7 @@ button.reset:hover:not(:has(> *)) {
     position: absolute;
     inset: 0;
     aspect-ratio: auto;
+    z-index: 2;
   }
 
   /* Small hero copy overlaid on the left of the picture */

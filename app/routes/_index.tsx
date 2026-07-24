@@ -25,8 +25,8 @@ type HeroContent = {
   heading: string | null;
   images: string[];
   coverImage: string | null;
-  // Single portrait image for the mobile hero; null falls back to `images`.
-  mobileImage: string | null;
+  // Portrait images for the mobile hero slider; empty falls back to `images`.
+  mobileImages: string[];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -122,13 +122,15 @@ function extractHeroFields(fields: any): {
   };
 }
 
-// Desktop entry drives the rotating banner + heading; the mobile entry's first
-// image is the single portrait shown on small screens (null → falls back to the
-// desktop banners). See HERO_CONTENT_QUERY.
+// Desktop entry drives the rotating banner + heading; the mobile entry's
+// populated images become the mobile slider (empty → falls back to the desktop
+// banners). Duplicate URLs are collapsed so the same file isn't slid twice.
+// See HERO_CONTENT_QUERY.
 function parseHeroContent(response: any): HeroContent | null {
   const desktop = extractHeroFields(response?.desktop?.fields);
   const mobile = extractHeroFields(response?.mobile?.fields);
-  if (!desktop.images.length && !desktop.heading && !mobile.images.length) {
+  const mobileImages = [...new Set(mobile.images)];
+  if (!desktop.images.length && !desktop.heading && !mobileImages.length) {
     return null;
   }
 
@@ -136,7 +138,7 @@ function parseHeroContent(response: any): HeroContent | null {
     heading: desktop.heading,
     images: desktop.images.slice(0, 4),
     coverImage: desktop.images[4] ?? null,
-    mobileImage: mobile.images[0] ?? null,
+    mobileImages,
   };
 }
 
@@ -257,7 +259,7 @@ export default function Homepage() {
 
 function Hero({content}: {content: HeroContent | null}) {
   const images = content?.images ?? [];
-  const mobileImage = content?.mobileImage ?? null;
+  const mobileImages = content?.mobileImages ?? [];
   const [active, setActive] = useState(0);
   // Live finger drag: distance dragged (px) while touching, null when idle.
   const [drag, setDrag] = useState(0);
@@ -307,23 +309,17 @@ function Hero({content}: {content: HeroContent | null}) {
     <>
       <section
         className="hero"
-        data-has-mobile={mobileImage ? 'true' : undefined}
+        data-has-mobile={mobileImages.length ? 'true' : undefined}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Single portrait image on mobile; CSS hides it (and shows the
+        {/* Portrait slider on mobile; CSS hides it (and shows the desktop
             rotating track) on desktop. Only rendered when the mobile
-            hero_content entry has an image — otherwise mobile falls back to
-            the desktop banners below. */}
-        {mobileImage && (
-          <img
-            className="hero-mobile-image"
-            src={mobileImage}
-            alt=""
-            aria-hidden="true"
-          />
-        )}
+            hero_content entry has images — otherwise mobile falls back to the
+            desktop banners below. Its own swipe state, independent of the
+            desktop track above. */}
+        {mobileImages.length > 0 && <MobileHeroSlider images={mobileImages} />}
         {count > 0 && (
           <div
             className="hero-track"
@@ -374,6 +370,130 @@ function Hero({content}: {content: HeroContent | null}) {
       </section>
       <MarketBar />
     </>
+  );
+}
+
+// Mobile-only hero slider: rotates the portrait images from the
+// `mobile_cover_imagess` entry. Shown only ≤48em (CSS); the desktop banner
+// track is hidden there. Self-contained swipe/auto-advance so it never
+// desyncs from the desktop hero, which can have a different image count.
+//
+// Touch is wired via a non-passive native listener (React's onTouchMove is
+// passive, so preventDefault there is ignored). We only hijack the gesture
+// once it reads as horizontal, so vertical page scroll still works, and we
+// stopPropagation so the parent .hero swipe handler never double-fires.
+function MobileHeroSlider({images}: {images: string[]}) {
+  const [active, setActive] = useState(0);
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const start = useRef<{x: number; y: number} | null>(null);
+  const axis = useRef<'h' | 'v' | null>(null); // locked gesture direction
+  const dragRef = useRef(0); // fresh drag distance for the once-bound listener
+  const count = images.length;
+
+  // Auto-advance; pauses while dragging.
+  useEffect(() => {
+    if (count <= 1 || dragging) return;
+    const id = setInterval(() => setActive((i) => (i + 1) % count), 5000);
+    return () => clearInterval(id);
+  }, [count, active, dragging]);
+
+  // Native, non-passive touch handling so preventDefault works on horizontal
+  // drags. Bound ONCE per image set — handlers read live state via refs, so we
+  // never rebind mid-gesture (which was tearing the swipe apart).
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || count <= 1) return;
+
+    const setD = (v: number) => {
+      dragRef.current = v;
+      setDrag(v);
+    };
+    const onStart = (e: TouchEvent) => {
+      start.current = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+      axis.current = null;
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!start.current) return;
+      const dx = e.touches[0].clientX - start.current.x;
+      const dy = e.touches[0].clientY - start.current.y;
+      if (!axis.current && Math.abs(dx) + Math.abs(dy) > 8) {
+        axis.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+        if (axis.current === 'h') setDragging(true);
+      }
+      if (axis.current === 'h') {
+        e.preventDefault(); // stop the page scrolling during a horizontal swipe
+        setD(dx);
+      }
+    };
+    const onEnd = () => {
+      if (axis.current === 'h') {
+        const width = window.innerWidth || 1;
+        if (Math.abs(dragRef.current) > width * 0.12) {
+          const dir = dragRef.current < 0 ? 1 : -1;
+          setActive((i) => ((i + dir) % count + count) % count);
+        }
+      }
+      start.current = null;
+      axis.current = null;
+      setDragging(false);
+      setD(0);
+    };
+
+    el.addEventListener('touchstart', onStart, {passive: true});
+    el.addEventListener('touchmove', onMove, {passive: false});
+    el.addEventListener('touchend', onEnd, {passive: true});
+    el.addEventListener('touchcancel', onEnd, {passive: true});
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+      el.removeEventListener('touchend', onEnd);
+      el.removeEventListener('touchcancel', onEnd);
+    };
+  }, [count]);
+
+  const dragPct = dragging ? (drag / (window.innerWidth || 1)) * 100 : 0;
+  const offset = -active * 100 + dragPct;
+
+  return (
+    <div className="hero-mobile-slider" ref={rootRef}>
+      <div
+        className="hero-mobile-track"
+        style={{
+          transform: `translate3d(${offset}%, 0, 0)`,
+          transition: dragging
+            ? 'none'
+            : 'transform 750ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
+      >
+        {images.map((url, index) => (
+          <img
+            key={index}
+            className="hero-mobile-image"
+            src={url}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+          />
+        ))}
+      </div>
+      {count > 1 && (
+        <div className="hero-dots" role="tablist" aria-label="Hero slides">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={`hero-dot ${index === active ? 'is-active' : ''}`}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-selected={index === active}
+              role="tab"
+              onClick={() => setActive(index)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

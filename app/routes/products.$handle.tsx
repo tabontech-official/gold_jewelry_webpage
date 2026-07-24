@@ -273,11 +273,14 @@ export default function Product() {
       <Breadcrumb items={breadcrumbs} />
 
       <div className="product-layout">
-        <ProductGallery
-          media={mediaItems}
-          selectedImageUrl={selectedVariant?.image?.url}
-          title={title}
-        />
+        <div className="product-gallery-column">
+          <ProductGallery
+            media={mediaItems}
+            selectedImageUrl={selectedVariant?.image?.url}
+            title={title}
+          />
+          <ProductTrustBadges />
+        </div>
 
         <div className="product-main">
           {sku && <p className="product-sku">SKU / Style Code: {sku}</p>}
@@ -306,7 +309,6 @@ export default function Product() {
           />
 
           <ProductAccordions descriptionHtml={descriptionHtml} />
-          <ProductTrustBadges />
 
           <div className="product-note">
             <h3>Important Note</h3>
@@ -700,7 +702,7 @@ function MonthlyEstimate({
   const canCheckout = variant?.id && variant.availableForSale !== false;
 
   return (
-    <p className="product-monthly">
+    <div className="product-monthly">
       From <strong>{perMonth}/mo</strong> with{' '}
       {canCheckout ? (
         <AddToCartButton
@@ -713,7 +715,7 @@ function MonthlyEstimate({
       ) : (
         <Link to="/policies/finance">View sample plans</Link>
       )}
-    </p>
+    </div>
   );
 }
 

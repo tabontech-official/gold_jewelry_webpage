@@ -87,20 +87,24 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
 }
 
 // Pulls the homepage hero content from the first hero_content metaobject.
-// The first three image fields form the rotating banner; the fourth is the
-// visual immediately below New Arrivals.
+// Images are ordered by their `hero image<N>` key suffix: the first four form
+// the rotating banner; the fifth is the visual immediately below New Arrivals.
 function parseHeroContent(response: any): HeroContent | null {
   const fields = response?.metaobjects?.nodes?.[0]?.fields;
   if (!Array.isArray(fields)) return null;
 
-  const mediaImages: string[] = [];
+  const imageFields: {order: number; url: string}[] = [];
   let heading: string | null = null;
   for (const field of fields as any[]) {
     const url = field?.reference?.image?.url;
-    const key = String(field?.key ?? '')
-      .replace(/[-_\s]+/g, '')
-      .toLowerCase();
-    if (url) mediaImages.push(url);
+    const rawKey = String(field?.key ?? '');
+    const key = rawKey.replace(/[-_\s]+/g, '').toLowerCase();
+    if (url) {
+      // Sort by the numeric suffix so images stay in author-defined sequence
+      // regardless of the order the API returns fields in.
+      const order = Number(rawKey.match(/(\d+)/)?.[1] ?? imageFields.length + 1);
+      imageFields.push({order, url});
+    }
     if (
       !heading &&
       field?.value &&
@@ -110,10 +114,14 @@ function parseHeroContent(response: any): HeroContent | null {
     }
   }
 
+  const mediaImages = imageFields
+    .sort((a, b) => a.order - b.order)
+    .map((f) => f.url);
+
   return {
     heading,
-    images: mediaImages.slice(0, 3),
-    coverImage: mediaImages[3] ?? null,
+    images: mediaImages.slice(0, 4),
+    coverImage: mediaImages[4] ?? null,
   };
 }
 
@@ -234,6 +242,44 @@ export default function Homepage() {
 
 function Hero({content}: {content: HeroContent | null}) {
   const images = content?.images ?? [];
+  const [active, setActive] = useState(0);
+  // Live finger drag: distance dragged (px) while touching, null when idle.
+  const [drag, setDrag] = useState(0);
+  const startX = useRef<number | null>(null);
+  const dragging = startX.current !== null;
+  const count = images.length;
+
+  const go = (next: number) => setActive(((next % count) + count) % count);
+
+  // Auto-advance every 5s; the interval resets on each slide change and pauses
+  // while the shopper is actively dragging.
+  useEffect(() => {
+    if (count <= 1 || dragging) return;
+    const id = setInterval(() => setActive((i) => (i + 1) % count), 5000);
+    return () => clearInterval(id);
+  }, [count, active, dragging]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (count <= 1) return;
+    startX.current = e.touches[0].clientX;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (startX.current === null) return;
+    setDrag(e.touches[0].clientX - startX.current);
+  };
+  const onTouchEnd = () => {
+    if (startX.current === null) return;
+    const width = window.innerWidth || 1;
+    // Commit to the next/prev slide once the finger passes ~12% of the width.
+    if (Math.abs(drag) > width * 0.12) go(active + (drag < 0 ? 1 : -1));
+    startX.current = null;
+    setDrag(0);
+  };
+
+  // Track offset: base slide position plus the live finger drag (as a %).
+  const dragPct = dragging ? (drag / (window.innerWidth || 1)) * 100 : 0;
+  const offset = -active * 100 + dragPct;
+
   // First line of the heading renders plain, remaining lines in gold italic.
   const [firstLine, ...restLines] = (content?.heading ?? '')
     .trim()
@@ -243,23 +289,47 @@ function Hero({content}: {content: HeroContent | null}) {
 
   return (
     <>
-      <section className="hero">
-        {images.map((url, index) => (
+      <section
+        className="hero"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {count > 0 && (
           <div
-            key={index}
-            className="hero-bg"
+            className="hero-track"
             style={{
-              backgroundImage: `url(${url})`,
-              ...(images.length > 1
-                ? {
-                    animationDuration: `${images.length * 5}s`,
-                    animationDelay: `${index * 5}s`,
-                  }
-                : {animation: 'none', opacity: 1}),
+              transform: `translate3d(${offset}%, 0, 0)`,
+              transition: dragging
+                ? 'none'
+                : 'transform 750ms cubic-bezier(0.22, 1, 0.36, 1)',
             }}
             aria-hidden="true"
-          />
-        ))}
+          >
+            {images.map((url, index) => (
+              <div
+                key={index}
+                className="hero-slide"
+                style={{backgroundImage: `url(${url})`}}
+              />
+            ))}
+          </div>
+        )}
+        {count > 1 && (
+          <div className="hero-dots" role="tablist" aria-label="Hero slides">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`hero-dot ${index === active ? 'is-active' : ''}`}
+                aria-label={`Go to slide ${index + 1}`}
+                aria-selected={index === active}
+                role="tab"
+                onClick={() => go(index)}
+              />
+            ))}
+          </div>
+        )}
         <div className="hero-inner">
           {firstLine ? (
             <h1>
@@ -268,7 +338,7 @@ function Hero({content}: {content: HeroContent | null}) {
             </h1>
           ) : (
             <h1>
-              Your Moment Your <span>Story in Gold..</span>
+             
             </h1>
           )}
         </div>

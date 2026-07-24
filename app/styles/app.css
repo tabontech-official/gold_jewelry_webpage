@@ -3190,6 +3190,9 @@ button.reset:hover:not(:has(> *)) {
   padding: 4.5rem 0 6.5rem;
   position: relative;
   isolation: isolate;
+  /* Swipe anywhere in the hero changes the slide; vertical page scroll stays
+     with the browser. */
+  touch-action: pan-y;
   @media (min-width: 48em) {
     padding: 7rem 0 7.5rem;
   }
@@ -3217,24 +3220,61 @@ button.reset:hover:not(:has(> *)) {
   z-index: -1;
 }
 
-.hero-bg {
-  animation: heroFade 10s infinite;
+/* Sliding track: a full-width row of slides translated by transform. Vertical
+   page scroll stays with the browser (pan-y); horizontal swipe is ours. */
+.hero-track {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.hero-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
   background-position: right center;
   background-repeat: no-repeat;
   background-size: cover;
   filter: contrast(1.08) saturate(1.04);
-  inset: 0;
-  opacity: 0;
+  /* A hair of scale so the image breathes as it settles — subtle motion. */
+  transform: scale(1.001);
+}
+
+.hero-dots {
   position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.9rem;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.hero-bg-cover {
-  background-image: url('/cover.webp');
+.hero-dot {
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  transition:
+    width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 300ms ease,
+    border-color 300ms ease;
 }
 
-.hero-bg-cover-alt {
-  animation-delay: 5s;
-  background-image: url('/cover1.webp');
+.hero-dot.is-active {
+  /* Elongated capsule for the current slide. */
+  width: 3rem;
+  background: #fff;
+  border-color: #fff;
 }
 
 .hero-inner {
@@ -3297,19 +3337,6 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
-@keyframes heroFade {
-  0%,
-  45% {
-    opacity: 1;
-  }
-  50%,
-  95% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
 
 .hero-eyebrow {
   color: var(--color-gold);
@@ -3404,7 +3431,7 @@ button.reset:hover:not(:has(> *)) {
     padding: 0;
   }
 
-  .hero-bg {
+  .hero-slide {
     background-position: center;
   }
 
@@ -5546,7 +5573,7 @@ button.reset:hover:not(:has(> *)) {
   padding: 0;
   background: var(--color-bg-soft);
   border: 1px solid rgba(17, 17, 17, 0.14);
-  border-radius: 10px;
+  border-radius: 0;
   cursor: pointer;
   transition:
     border-color 140ms ease,
@@ -5585,11 +5612,13 @@ button.reset:hover:not(:has(> *)) {
   overflow: hidden;
   background: #fff;
   border: 0;
-  border-radius: 14px;
+  border-radius: 0;
 }
 
 .pgg-feature {
-  aspect-ratio: 4 / 3.75;
+  /* Portrait-leaning so the tall product shots fill the column instead of
+     leaving dead space below the gallery. */
+  aspect-ratio: 4 / 4.6;
   border: 1px solid rgba(17, 17, 17, 0.08);
 }
 
@@ -5678,13 +5707,64 @@ button.reset:hover:not(:has(> *)) {
 }
 
 @media (max-width: 42em) {
+  /* Stack via wrap (not flex-direction:column) — a column flex with an
+     aspect-ratio stage collapses the main image to 0 height. Keep the row
+     direction and let the stage take a full row, so the rail wraps beneath. */
   .product-grid-gallery {
     --pgg-rail-w: 5rem;
+    flex-wrap: wrap;
     gap: 0.6rem;
   }
 
+  .pgg-stage {
+    order: 1;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .pgg-rail {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+    flex-direction: row;
+    /* All thumbnails share one row, no scroll, no gap. */
+    gap: 0;
+    overflow: hidden;
+    padding-right: 0;
+  }
+
   .pgg-thumb {
-    min-height: 3.5rem;
+    /* Equal-split the row so any count (5, 6, …) fits in a single row. */
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+/* Below the two-column breakpoint the layout stacks. Flatten the gallery
+   column (display:contents) so the trust badges become siblings of
+   product-main and can be ordered to the very end. */
+@media (max-width: 48em) {
+  .product-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-gallery-column {
+    display: contents;
+  }
+
+  /* As a flex item of the stacked column, the gallery's cross-axis is width;
+     its default align-self:start shrinks it to content (tiny box). Force it
+     to fill the row. */
+  .product-grid-gallery {
+    align-self: stretch;
+    width: 100%;
+  }
+
+  .product-trust-badges {
+    order: 3;
   }
 }
 
@@ -5764,8 +5844,18 @@ button.reset:hover:not(:has(> *)) {
 
 @media (max-width: 30em) {
   .product-specs {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem 0.9rem;
+  }
+
+  .product-spec-item {
+    gap: 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  .product-spec-svg {
+    width: 1.3rem;
+    height: 1.3rem;
   }
 }
 
@@ -8859,53 +8949,18 @@ button.reset:hover:not(:has(> *)) {
 */
 .diamond-value-visual {
   position: relative;
-  min-height: clamp(15rem, 25vw, 22.5rem);
   overflow: hidden;
   border: 1px solid var(--color-border);
-  background: #000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.018);
-}
-
-.diamond-value-visual::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.08),
-      transparent 42%,
-      rgba(255, 255, 255, 0.62)
-    ),
-    linear-gradient(to top, rgba(255, 255, 255, 0.08), transparent 45%);
-  pointer-events: none;
 }
 
 .diamond-value-visual img {
   display: block;
   width: 100%;
-  height: clamp(15rem, 25vw, 22.5rem);
-  object-fit: cover;
-  object-position: 50% 80%;
+  height: auto;
+  object-fit: contain;
   border-radius: 0;
 }
 
-@media (max-width: 54em) {
-  .diamond-value-visual {
-    display: grid;
-    gap: 0;
-    min-height: 0;
-    background: #111;
-  }
-
-  .diamond-value-visual::after {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.45), transparent 55%);
-  }
-
-  .diamond-value-visual img {
-    height: 12.75rem;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .trust-promise-card,

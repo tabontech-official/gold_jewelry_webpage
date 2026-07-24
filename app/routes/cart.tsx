@@ -1,5 +1,7 @@
+import {Suspense} from 'react';
 import {
-  useLoaderData,
+  Await,
+  useRouteLoaderData,
   data,
   type HeadersFunction,
 } from 'react-router';
@@ -7,6 +9,7 @@ import type {Route} from './+types/cart';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
+import type {RootLoader} from '~/root';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: `Hydrogen | Cart`}];
@@ -110,13 +113,11 @@ export async function action({request, context}: Route.ActionArgs) {
   );
 }
 
-export async function loader({context}: Route.LoaderArgs) {
-  const {cart} = context;
-  return await cart.get();
-}
-
+// No loader fetch — the cart promise is already in flight from the root
+// loader, so the page renders instantly and reuses that data instead of a
+// second Storefront round-trip on every navigation.
 export default function Cart() {
-  const cart = useLoaderData<typeof loader>();
+  const rootData = useRouteLoaderData<RootLoader>('root');
 
   return (
     <div className="cart">
@@ -124,7 +125,11 @@ export default function Cart() {
         <span className="eyebrow">Your Selection</span>
         <h1>Shopping Bag</h1>
       </div>
-      <CartMain layout="page" cart={cart} />
+      <Suspense fallback={<p>Loading cart …</p>}>
+        <Await resolve={rootData?.cart}>
+          {(cart) => <CartMain layout="page" cart={cart ?? null} />}
+        </Await>
+      </Suspense>
     </div>
   );
 }

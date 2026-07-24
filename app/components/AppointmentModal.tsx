@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 import {useFetcher} from 'react-router';
 
 type ProductInfo = {
@@ -19,9 +20,13 @@ type ActionResult =
  */
 export function AppointmentModal({product}: {product: ProductInfo}) {
   const [open, setOpen] = useState(false);
+  // Portal target only exists client-side; gate on mount so SSR skips it.
+  const [mounted, setMounted] = useState(false);
   const fetcher = useFetcher<ActionResult>();
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   const submitting = fetcher.state !== 'idle';
   const result = fetcher.data;
@@ -59,16 +64,18 @@ export function AppointmentModal({product}: {product: ProductInfo}) {
         Book Private Consultation
       </button>
 
-      {open && (
-        <div
-          className="appt-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Book a private consultation"
-          onMouseDown={(e) => {
-            if (e.target === dialogRef.current?.parentElement) setOpen(false);
-          }}
-        >
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="appt-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Book a private consultation"
+            onMouseDown={(e) => {
+              if (e.target === dialogRef.current?.parentElement) setOpen(false);
+            }}
+          >
           <button
             className="appt-overlay-scrim"
             aria-label="Close"
@@ -190,9 +197,10 @@ export function AppointmentModal({product}: {product: ProductInfo}) {
                 </fetcher.Form>
               </>
             )}
-          </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -6062,9 +6062,32 @@ button.reset:hover:not(:has(> *)) {
 
 .product-page-wishlist:hover,
 .product-page-wishlist.is-active {
-  border-color: var(--color-gold);
-  background: var(--color-gold-soft);
-  color: var(--color-gold-dark);
+  border-color: var(--color-sale);
+  background: rgba(178, 58, 72, 0.08);
+  color: var(--color-sale);
+}
+
+/* Saved: heart fills red and gives a quick pop. */
+.product-page-wishlist.is-active svg {
+  animation: wishlistPop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes wishlistPop {
+  0% {
+    transform: scale(0.8);
+  }
+  55% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-page-wishlist.is-active svg {
+    animation: none;
+  }
 }
 
 .wishlist-toast {
@@ -6390,36 +6413,6 @@ button.reset:hover:not(:has(> *)) {
 .product-atc:hover:not(:disabled) {
   background: #262626;
   border-color: #262626;
-}
-
-/* Express purchase block — Shop button + more payment options */
-.product-express {
-  display: grid;
-  gap: 0.6rem;
-  margin-top: 0.15rem;
-}
-
-.product-express form {
-  max-width: none;
-  width: 100%;
-}
-
-.product-more-payment {
-  width: 100%;
-  margin: 0;
-  padding: 0.2rem;
-  background: none;
-  border: 0;
-  color: var(--color-ink-soft);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  transition: color 140ms ease;
-}
-
-.product-more-payment:hover:not(:disabled) {
-  color: var(--color-ink);
 }
 
 .product-finance-note {
@@ -9427,28 +9420,40 @@ button.reset:hover:not(:has(> *)) {
 }
 
 /* ===== Book Private Consultation — button + modal ===== */
+/* "Trusty green" premium CTA. --cta variant (the on-page trigger) carries an
+   animated side arrow + a sheen sweep on hover; the in-modal Done/submit
+   buttons share the green fill without the arrow. */
 .product-book-consult {
+  --consult-green: #1f7a4d;
+  --consult-green-deep: #185f3c;
   width: 100%;
-  min-height: 3.25rem;
+  min-height: 3.5rem; /* match .product-atc (Add to bag) */
   margin: 0;
-  background: transparent;
-  color: var(--color-ink);
-  border: 1px solid var(--color-gold);
-  border-radius: 0;
+  background: var(--consult-green);
+  color: #fff;
+  border: 1px solid var(--consult-green);
+  border-radius: 0; /* sharp, edgy corners like Add to bag */
   font-size: 0.92rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
-    background 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease;
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
 }
 
 .product-book-consult:hover:not(:disabled) {
-  background: var(--color-gold);
-  border-color: var(--color-gold);
-  color: #fff;
+  background: var(--consult-green-deep);
+  border-color: var(--consult-green-deep);
+  box-shadow: 0 8px 22px rgba(24, 95, 60, 0.28);
+  transform: translateY(-1px);
+}
+
+.product-book-consult:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(24, 95, 60, 0.25);
 }
 
 .product-book-consult:disabled {
@@ -9456,10 +9461,69 @@ button.reset:hover:not(:has(> *)) {
   cursor: default;
 }
 
+/* On-page trigger: centered label + animated arrow, with a light sweep. */
+.product-book-consult--cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  overflow: hidden;
+}
+
+/* Arrow drawn with CSS so no JSX/markup change is needed. */
+.product-book-consult--cta::after {
+  content: '→';
+  font-size: 1.1em;
+  line-height: 1;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-book-consult--cta:hover:not(:disabled)::after {
+  transform: translateX(6px);
+}
+
+/* Diagonal sheen that sweeps across on hover. */
+.product-book-consult--cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
+  transform: skewX(-18deg);
+  transition: left 620ms ease;
+  pointer-events: none;
+}
+
+.product-book-consult--cta:hover:not(:disabled)::before {
+  left: 130%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-book-consult,
+  .product-book-consult--cta::after,
+  .product-book-consult--cta::before {
+    transition: none;
+  }
+  .product-book-consult:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
 .appt-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  /* Above the sticky header/announcement bars (z:900 + backdrop-filter
+     stacking context) — matches the cart/search overlay convention so the
+     whole page, header included, sits under the scrim. */
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9551,7 +9615,8 @@ button.reset:hover:not(:has(> *)) {
   margin-bottom: 0.4rem;
 }
 
-.appt-field input {
+.appt-field input,
+.appt-field textarea {
   width: 100%;
   min-height: 3rem;
   padding: 0 0.9rem;
@@ -9560,10 +9625,18 @@ button.reset:hover:not(:has(> *)) {
   border-radius: 0;
   font-size: 1rem;
   color: var(--color-ink);
+  font-family: inherit;
   transition: border-color 140ms ease;
 }
 
-.appt-field input:focus {
+.appt-field textarea {
+  padding: 0.7rem 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.appt-field input:focus,
+.appt-field textarea:focus {
   outline: none;
   border-color: var(--color-gold);
 }

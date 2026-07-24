@@ -131,28 +131,6 @@ export function ProductForm({
           {wishlistButton}
         </div>
 
-        {selectedVariant?.availableForSale && (
-          <div className="product-express">
-            <AddToCartButton
-              className="product-more-payment"
-              redirectTo="@checkout"
-              lines={
-                selectedVariant
-                  ? [
-                      {
-                        merchandiseId: selectedVariant.id,
-                        quantity: 1,
-                        selectedVariant,
-                      },
-                    ]
-                  : []
-              }
-            >
-              More payment options
-            </AddToCartButton>
-          </div>
-        )}
-
         <AppointmentModal
           product={{
             id: product.id,

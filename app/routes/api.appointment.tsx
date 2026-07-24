@@ -1,28 +1,177 @@
 import type {Route} from './+types/api.appointment';
-import {parseAppointment, bookAppointment} from '~/lib/appointments.server';
 
-// POST target for the "Book Private Consultation" form. All Admin API work is
-// server-side in appointments.server.ts; this route only validates and relays.
+// Private-consultation request. Mirrors the newsletter (api.subscribe): create
+// the customer via the Storefront API (TAKEN = already on file, fine), then
+// email the appointment details to the store + a confirmation to the customer.
+// No Admin API, no metaobjects, no metafields.
 export async function action({request, context}: Route.ActionArgs) {
-  if (request.method !== 'POST') {
-    return Response.json({ok: false, error: 'Method not allowed'}, {status: 405});
-  }
+  const form = await request.formData();
+  const name = String(form.get('name') ?? '').replace(/\s+/g, ' ').trim();
+  const email = String(form.get('email') ?? '').trim().toLowerCase();
+  const date = String(form.get('date') ?? '').trim();
+  const productTitle = String(form.get('productTitle') ?? '').trim();
+  const productHandle = String(form.get('productHandle') ?? '').trim();
+  const variantInfo = String(form.get('variantInfo') ?? '').trim();
+  const message = String(form.get('message') ?? '').trim().slice(0, 1000);
 
-  const {data, errors} = parseAppointment(await request.formData());
-  if (errors) return Response.json({ok: false, errors}, {status: 400});
+  const errors: Record<string, string> = {};
+  if (name.length < 2) errors.name = 'Please enter your full name.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    errors.email = 'Please enter a valid email address.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) errors.date = 'Please choose a date.';
+  if (Object.keys(errors).length) return {ok: false, errors};
 
   try {
-    await bookAppointment(context.env as any, data!);
-    return Response.json({ok: true});
-  } catch (error) {
-    console.error('[appointment] booking failed:', error);
-    return Response.json(
+    const [firstName, ...rest] = name.split(' ');
+    const {customerCreate} = await context.storefront.mutate(
+      APPOINTMENT_CUSTOMER_MUTATION,
       {
-        ok: false,
-        error:
-          'We could not submit your request right now. Please try again in a moment.',
+        variables: {
+          input: {
+            email,
+            firstName,
+            lastName: rest.join(' ') || undefined,
+            // ponytail: throwaway password — passwordless customer accounts;
+            // the record only needs to exist + carry marketing consent.
+            password: crypto.randomUUID(),
+            acceptsMarketing: true,
+          },
+        },
       },
-      {status: 502},
     );
+
+    const err = customerCreate?.customerUserErrors?.[0];
+    // TAKEN = already a customer; not an error for our purposes.
+    if (err && err.code !== 'TAKEN') return {ok: false, error: err.message};
+
+    // Emails are best-effort — a booking is "received" even if email is off.
+    await sendEmails(context.env, {
+      name,
+      email,
+      date,
+      productTitle,
+      productHandle,
+      variantInfo,
+      message,
+    });
+
+    return {ok: true};
+  } catch (error) {
+    console.error('[appointment]', error);
+    return {ok: false, error: 'Something went wrong. Please try again.'};
   }
 }
+
+type Details = {
+  name: string;
+  email: string;
+  date: string;
+  productTitle: string;
+  productHandle: string;
+  variantInfo: string;
+  message: string;
+};
+
+function escapeHtml(v: string): string {
+  return v.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[
+        c
+      ]!,
+  );
+}
+
+function prettyDate(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : new Intl.DateTimeFormat('en-US', {
+        timeZone: 'UTC',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(d);
+}
+
+// Sends the store alert + customer confirmation via Resend. If RESEND_API_KEY
+// is unset, quietly skips (booking still succeeds).
+async function sendEmails(env: Env, d: Details): Promise<void> {
+  const key = (env as any).RESEND_API_KEY as string | undefined;
+  if (!key) {
+    console.warn('[appointment] RESEND_API_KEY unset — emails skipped');
+    return;
+  }
+  const from =
+    ((env as any).RESEND_FROM as string) || 'Gold Custom <onboarding@resend.dev>';
+  const notify =
+    ((env as any).NOTIFY_EMAIL as string) || '2038tabonech@mail.com';
+  const storeUrl = `https://goldcustom.com/products/${d.productHandle}`;
+  const when = prettyDate(d.date);
+
+  const send = async (to: string, subject: string, html: string) => {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({from, to, subject, html}),
+    });
+    if (!res.ok) console.error(`[appointment] Resend ${to}:`, await res.text());
+  };
+
+  const messageBlock = d.message
+    ? `<div style="margin:16px 0 0;padding:12px 14px;background:#faf6ec;border-left:3px solid #d4af6a">
+         <div style="font-size:13px;color:#8a8175;margin-bottom:4px">Message</div>
+         <div style="font-size:15px;color:#2b2620;white-space:pre-wrap">${escapeHtml(d.message)}</div>
+       </div>`
+    : '';
+
+  await send(
+    notify,
+    'New Jewelry Appointment Alert',
+    shell(
+      'New Consultation Request',
+      `<p style="margin:0 0 18px;color:#4a463f">A customer has requested a private consultation.</p>
+       ${row('Customer', d.name)}${row('Email', d.email)}${row('Appointment', when)}
+       ${row('Product', d.productTitle)}${d.variantInfo ? row('Variant', d.variantInfo) : ''}
+       ${messageBlock}
+       <p style="margin:18px 0 0"><a href="${escapeHtml(storeUrl)}" style="color:#b6893f">View product &rarr;</a></p>`,
+    ),
+  );
+
+  await send(
+    d.email,
+    'Your Gold Custom Consultation Request',
+    shell(
+      `Thank you, ${escapeHtml(d.name.split(' ')[0])}`,
+      `<p style="margin:0 0 16px;line-height:1.6;color:#4a463f">We've received your request for a private consultation. One of our jewelry specialists will contact you shortly to confirm the details.</p>
+       ${row('Piece', d.productTitle)}${row('Requested date', when)}
+       <p style="margin:20px 0 0"><a href="${escapeHtml(storeUrl)}" style="color:#b6893f">View this piece &rarr;</a></p>`,
+    ),
+  );
+}
+
+function shell(title: string, body: string): string {
+  return `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Georgia,serif;color:#2b2620">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fffdf8;border:1px solid #e6ddc9;border-radius:12px;overflow:hidden">
+      <tr><td style="background:#1c1a17;padding:24px;text-align:center"><span style="color:#d4af6a;font-size:20px;letter-spacing:3px;text-transform:uppercase">Gold Custom</span></td></tr>
+      <tr><td style="padding:32px"><h1 style="margin:0 0 16px;font-size:22px;font-weight:normal;color:#1c1a17">${title}</h1>${body}</td></tr>
+      <tr><td style="padding:20px 32px;border-top:1px solid #eee4d2;font-size:12px;color:#8a8175;text-align:center">Gold Custom · Fine Jewelry &amp; Watches</td></tr>
+    </table></td></tr></table></body></html>`;
+}
+
+function row(label: string, value: string): string {
+  return `<p style="margin:0 0 10px;font-size:15px"><span style="color:#8a8175">${label}:</span> <strong style="color:#1c1a17">${escapeHtml(value)}</strong></p>`;
+}
+
+const APPOINTMENT_CUSTOMER_MUTATION = `#graphql
+  mutation AppointmentCustomer($input: CustomerCreateInput!) {
+    customerCreate(input: $input) {
+      customer { id }
+      customerUserErrors { code message }
+    }
+  }
+` as const;

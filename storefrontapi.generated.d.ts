@@ -1237,25 +1237,46 @@ export type TrustBadgesQuery = {
   }>;
 };
 
+export type HeroFieldsFragment = {
+  fields: Array<
+    Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+      reference?: StorefrontAPI.Maybe<{
+        image?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Image, 'url' | 'altText'>
+        >;
+      }>;
+    }
+  >;
+};
+
 export type HeroContentQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
 }>;
 
 export type HeroContentQuery = {
-  metaobjects: {
-    nodes: Array<{
-      fields: Array<
-        Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
-          reference?: StorefrontAPI.Maybe<{
-            image?: StorefrontAPI.Maybe<
-              Pick<StorefrontAPI.Image, 'url' | 'altText'>
-            >;
-          }>;
-        }
-      >;
-    }>;
-  };
+  desktop?: StorefrontAPI.Maybe<{
+    fields: Array<
+      Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+        reference?: StorefrontAPI.Maybe<{
+          image?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Image, 'url' | 'altText'>
+          >;
+        }>;
+      }
+    >;
+  }>;
+  mobile?: StorefrontAPI.Maybe<{
+    fields: Array<
+      Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'> & {
+        reference?: StorefrontAPI.Maybe<{
+          image?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Image, 'url' | 'altText'>
+          >;
+        }>;
+      }
+    >;
+  }>;
 };
 
 export type RecommendedProductFragment = Pick<
@@ -1498,6 +1519,19 @@ export type TikTokVideosQuery = {
       >;
     }>;
   };
+};
+
+export type AppointmentCustomerMutationVariables = StorefrontAPI.Exact<{
+  input: StorefrontAPI.CustomerCreateInput;
+}>;
+
+export type AppointmentCustomerMutation = {
+  customerCreate?: StorefrontAPI.Maybe<{
+    customer?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Customer, 'id'>>;
+    customerUserErrors: Array<
+      Pick<StorefrontAPI.CustomerUserError, 'code' | 'message'>
+    >;
+  }>;
 };
 
 export type ProductNodeFragment = Pick<
@@ -2734,7 +2768,7 @@ interface GeneratedQueryTypes {
     return: TrustBadgesQuery;
     variables: TrustBadgesQueryVariables;
   };
-  '#graphql\n  query HeroContent($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    metaobjects(type: "hero_content", first: 1) {\n      nodes {\n        fields {\n          key\n          value\n          reference {\n            ... on MediaImage {\n              image {\n                url\n                altText\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query HeroContent($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    desktop: metaobject(\n      handle: {type: "hero_content", handle: "hero-content-fbt3hbmk"}\n    ) {\n      ...HeroFields\n    }\n    mobile: metaobject(\n      handle: {type: "hero_content", handle: "mobile_cover_imagess"}\n    ) {\n      ...HeroFields\n    }\n  }\n  #graphql\n  fragment HeroFields on Metaobject {\n    fields {\n      key\n      value\n      reference {\n        ... on MediaImage {\n          image {\n            url\n            altText\n          }\n        }\n      }\n    }\n  }\n\n': {
     return: HeroContentQuery;
     variables: HeroContentQueryVariables;
   };
@@ -2821,6 +2855,10 @@ interface GeneratedQueryTypes {
 }
 
 interface GeneratedMutationTypes {
+  '#graphql\n  mutation AppointmentCustomer($input: CustomerCreateInput!) {\n    customerCreate(input: $input) {\n      customer { id }\n      customerUserErrors { code message }\n    }\n  }\n': {
+    return: AppointmentCustomerMutation;
+    variables: AppointmentCustomerMutationVariables;
+  };
   '#graphql\n  mutation NewsletterSubscribe($input: CustomerCreateInput!) {\n    customerCreate(input: $input) {\n      customer {\n        id\n      }\n      customerUserErrors {\n        code\n        message\n      }\n    }\n  }\n': {
     return: NewsletterSubscribeMutation;
     variables: NewsletterSubscribeMutationVariables;

@@ -53,7 +53,7 @@ export function AppointmentModal({product}: {product: ProductInfo}) {
     <>
       <button
         type="button"
-        className="btn product-book-consult"
+        className="btn product-book-consult product-book-consult--cta"
         onClick={() => setOpen(true)}
       >
         Book Private Consultation
@@ -164,6 +164,15 @@ export function AppointmentModal({product}: {product: ProductInfo}) {
                     {fieldErrors?.date && (
                       <em className="appt-error">{fieldErrors.date}</em>
                     )}
+                  </label>
+
+                  <label className="appt-field">
+                    <span>Message (optional)</span>
+                    <textarea
+                      name="message"
+                      rows={3}
+                      placeholder="Anything you'd like the specialist to know…"
+                    />
                   </label>
 
                   {formError && <p className="appt-form-error">{formError}</p>}
